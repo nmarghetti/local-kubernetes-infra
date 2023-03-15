@@ -1,0 +1,9 @@
+# https://git-scm.com/docs/gitattributes
+# git ls-files --eol
+
+# Normalize all line endings
+*	text=auto
+
+# Ensure shell scripts use LF line endings
+*.sh text eol=lf
+*.py text eol=lf
