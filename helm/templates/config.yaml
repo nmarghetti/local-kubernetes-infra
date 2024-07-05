@@ -1,0 +1,52 @@
+# Common config map
+{{- range $configName, $config := .Values.configs }}
+{{- if $config.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "chart.fullname" $ }}-{{ $configName }}
+  {{- if $config.annotations }}
+  annotations:
+    {{- with $config.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels:
+    {{- include "chart.labels" $ | nindent 4 }}
+    {{- with $config.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  # { {- include "chart.config.values" ( dict "config" $config.data ) } }
+  {{- with $config.data }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+# Config from deployment
+{{- range $appName, $currentApp := .Values.apps }}
+{{- if $currentApp.deployment }}
+{{- if $currentApp.deployment.enabled }}
+{{- $deployment := $currentApp.deployment }}
+{{- if $deployment.config }}
+{{- if gt (len $deployment.config) 0 }}
+{{- $config := $deployment.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "chart.fullname" $ }}-{{ $appName }}
+  labels:
+    {{- include "chart.labels" $ | nindent 4 }}
+data:
+  # { {- include "chart.config.values" ( dict "config" $config ) } }
+  {{- with $config }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

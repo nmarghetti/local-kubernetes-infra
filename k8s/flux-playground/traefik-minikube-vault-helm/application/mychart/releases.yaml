@@ -1,0 +1,131 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: apps
+spec:
+  chart:
+    spec:
+      chart: mychart
+      sourceRef:
+        kind: HelmRepository
+        name: mychart
+        namespace: apps
+      version: 1.0.0
+  interval: 5m
+  values:
+    vault:
+      enabled: true
+      secretStoreKind: SecretStore
+      secretStore: store
+
+    configs:
+      home:
+        enabled: true
+        data:
+          index.html: |
+            <!-- ######## This is a comment, visible only in the source editor  ######## -->
+            <h1 style="color: #4485b8;">Here are some services available</h1>
+            <p></p>
+            <ul>
+            <li>Traefik dashboard - <a href="http://dashboard.traefik.minikube/" target="_blank" rel="noopener">http://dashboard.traefik.minikube/</a></li>
+            <li>Whoami - <a href="http://whoami.traefik.minikube/" target="_blank" rel="noopener">http://whoami.traefik.minikube/</a></li>
+            <li>Podinfo - <a href="http://podinfo.traefik.minikube/" target="_blank" rel="noopener">http://podinfo.traefik.minikube/</a></li>
+            <li>Podinfo swagger - <a href="http://podinfo.traefik.minikube/swagger/index.html" target="_blank" rel="noopener">http://podinfo.traefik.minikube/swagger/index.html</a></li>
+            </ul>
+            <p style="text-align: left;"></p>
+            <p style="text-align: left;"></p>
+            <p style="text-align: left;"></p>
+            <p style="text-align: center;">Generated with <a href="https://html6.com/editor/" target="_blank" rel="noopener">https://html6.com/editor/</a></p>
+
+    apps:
+      podinfo:
+        deployment:
+          enabled: true
+          image:
+            registry: stefanprodan
+          vault:
+            secretConfig:
+              application:
+                api-admin-password: api.admin.password
+            templateSecretConfig:
+              PODINFO_UI_MESSAGE: 'Hello from cluster. Check swagger at /swagger/index.html. I also have a secret, the api admin password is {{@application:api.admin.password}}'
+          ports:
+            - name: podinfo
+              containerPort: 9898
+        service:
+          enabled: true
+          ports:
+            - name: podinfo
+              port: 9898
+              targetPort: podinfo
+        ingress:
+          enabled: true
+          kind: traefik
+          ingressClassName: traefik
+          entryPoints:
+            - web
+          match: Host(`podinfo.traefik.minikube`)
+          port: 9898
+
+      whoami:
+        deployment:
+          enabled: true
+          image:
+            registry: containous
+          ports:
+            - name: http
+              containerPort: 80
+        service:
+          enabled: true
+          ports:
+            - name: http
+              port: 80
+              targetPort: http
+        ingress:
+          enabled: true
+          kind: traefik
+          ingressClassName: traefik
+          entryPoints:
+            - web
+          routes:
+            - kind: Rule
+              match: Host(`whoami.traefik.minikube`)
+              services:
+                - kind: Service
+                  name: ${servicename}
+                  port: 80
+              middlewares:
+                - name: add-foo-bar
+                - name: replace-path-regex
+                - name: strip-prefix
+                - name: strip-prefix
+                - name: custom-header
+
+      home:
+        deployment:
+          enabled: true
+          image:
+            registry: docker.io
+            name: nginx
+          ports: [80]
+          container:
+            volumeMounts:
+              - name: home
+                mountPath: /usr/share/nginx/html/index.html
+                subPath: index.html
+          volumes:
+            - name: home
+              configMap:
+                name: ${chart[home]}
+                items:
+                  - key: index.html
+                    path: index.html
+        service:
+          enabled: true
+          ports: [80]
+        ingress:
+          enabled: true
+          kind: networking
+          ingressClassName: nginx
+          host: home.minikube
+          port: 80

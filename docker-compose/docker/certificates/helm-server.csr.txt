@@ -1,0 +1,24 @@
+Certificate Request:
+    Data:
+        Version: 1 (0x0)
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = helm, emailAddress = helm@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:23:09:a8:ab:c7:00:90:db:9c:07:93:ab:d6:e8:
+                    5c:7c:dc:11:19:6d:02:ff:09:0f:4f:29:20:4a:8b:
+                    1a:5b:96:16:b5:ef:9a:78:98:3a:7d:91:68:e6:aa:
+                    af:83:a1:2c:77:b4:fe:98:ef:1d:ed:f8:72:3d:30:
+                    aa:20:69:8c:aa
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        Attributes:
+            (none)
+            Requested Extensions:
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:46:02:21:00:b9:f2:02:29:f3:7c:7e:ab:18:0b:49:6c:d6:
+        b3:61:e5:e1:cb:dd:1b:3a:14:d6:6c:9e:b4:53:eb:fc:74:e4:
+        62:02:21:00:f2:2e:f2:40:19:1a:e6:d4:0f:1c:e5:09:7f:db:
+        91:04:7a:0e:81:57:36:c7:00:db:e6:56:70:5d:82:cc:05:d7

@@ -1,0 +1,146 @@
+configs:
+  common:
+    annotations:
+      someAnnotation: something
+    labels:
+      someLabel: label
+    data:
+      key: value
+      document: |
+        some line
+        another line
+
+apps:
+  backend:
+    deployment:
+      annotations:
+        annotationKey: annotationValue
+        anotherAnnotationKey: anotherAnnotationValue
+      labels:
+        labelKey: labelValue
+        anotherLabelKey: anotherLabelValue
+      config:
+        extraKey: extraValue
+      env:
+        key: value
+      envFrom:
+        - chartConfigMapRef: common
+        - configMapRef: some-config
+        - configMapRef: another-config
+        - secretRef: some-secret
+        - secretRef: another-secret
+      ports:
+        - containerPort: 9898
+          name: podinfo
+        - containerPort: 8080
+          name: http
+      container:
+        env:
+          - name: env-key
+            value: value
+          - name: config-key
+            valueFrom:
+              configMapKeyRef:
+                name: some-config
+                key: some.key
+        envFrom:
+          - configMapRef:
+              name: more-config
+          - secretRef:
+              name: more-secret
+        volumeMounts:
+          - name: home
+            mountPath: /usr/share/nginx/html/index.html
+            subPath: index.html
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+        startupProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 1
+          failureThreshold: 15
+          periodSeconds: 1
+        resources:
+          requests:
+            cpu: 1
+            memory: 100Mi
+          limits:
+            cpu: 1
+            memory: 200Mi
+      volumes:
+        - name: home
+          configMap:
+            name: ${chart[common]}
+            items:
+              - key: document
+                path: index.html
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - worker
+      containers:
+        - name: init
+          image: docker.io/busybox:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 1
+              memory: 100Mi
+            limits:
+              cpu: 1
+              memory: 200Mi
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+    service:
+      ports:
+        - port: 8080
+          targetPort: 8080
+          name: http
+        - port: 9898
+          targetPort: 9898
+          name: podinfo
+          protocol: TCP
+
+    ingress:
+      kind: networking
+      host: play.local
+      tls:
+        - hosts:
+            - play.local
+      ingressClassName: nginx-test
+      rules:
+        - host: play.local
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: ${servicename}
+                    port:
+                      number: 8080
+  frontend:
+    ingress:
+      kind: traefik
+      host: frontend.play.local
+      entryPoints:
+        - web
+      routes:
+        - kind: Rule
+          match: Host(`frontend.traefik.local`)
+          services:
+            - kind: Service
+              name: ${servicename}
+              port: 9000

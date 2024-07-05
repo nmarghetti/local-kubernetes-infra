@@ -1,0 +1,28 @@
+Certificate:
+    Data:
+        Version: 1 (0x0)
+        Serial Number:
+            38:2b:11:96:22:0e:ab:4e:81:77:35:96:13:bc:ad:04:26:0e:2a:6d
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = localca, emailAddress = localca@no-reply.com
+        Validity
+            Not Before: Oct  2 23:21:35 2024 GMT
+            Not After : Jun 29 23:21:35 2027 GMT
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = DEX, CN = local-registry-client, emailAddress = local-registry-client@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:e9:b0:34:04:d4:82:59:1d:fc:e7:db:1a:b0:a0:
+                    c1:03:46:f1:e7:81:d5:1e:27:20:d5:aa:2b:bf:23:
+                    8d:44:ce:55:70:66:1b:8f:14:c6:c0:2d:83:6d:2d:
+                    51:6f:71:5b:2d:7c:ea:5b:ba:c0:4a:5a:6e:22:22:
+                    c6:fd:c3:23:72
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:44:02:20:6d:dd:43:7c:88:71:5e:7a:90:8c:ba:83:d9:63:
+        bc:11:48:23:45:ab:69:6f:99:08:62:a8:5d:05:5b:47:75:7a:
+        02:20:47:20:98:09:6f:13:09:ef:49:87:d3:19:fe:b2:af:b4:
+        88:06:de:2e:b6:75:76:75:13:fd:d7:4e:04:b1:5c:7c

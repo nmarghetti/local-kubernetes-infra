@@ -1,0 +1,22 @@
+http:
+  services:
+    whoami:
+      loadBalancer:
+        servers:
+          - url: 'http://whoami:80'
+
+  routers:
+    whoami:
+      entryPoints:
+        - web
+      rule: Host(`whoami.docker.localhost`)
+      service: whoami
+      middlewares:
+        - tls-redirect@file
+
+    tls-whoami:
+      entryPoints:
+        - websecure
+      rule: Host(`whoami.docker.localhost`)
+      service: whoami
+      tls: true

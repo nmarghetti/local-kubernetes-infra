@@ -1,0 +1,14 @@
+# Allow everything
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: flux-cluster-admin-binding
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: flux-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin

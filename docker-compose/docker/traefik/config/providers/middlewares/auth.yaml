@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    traefik-dashboard-basic-auth:
+      basicAuth:
+        users:
+          - admin:$apr1$mgoktys3$HMzdD2rS7QxXJ1zlgYuis1 # admin:traefik (generated with `htpasswd -bn admin traefik` or `printf "admin:$(openssl passwd -apr1 traefik)\n"`)

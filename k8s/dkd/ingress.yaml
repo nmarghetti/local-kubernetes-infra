@@ -1,0 +1,18 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dkd
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /dkd
+            pathType: Prefix
+            backend:
+              service:
+                name: dkd
+                port:
+                  number: 8100
+      host: dkd.minikube

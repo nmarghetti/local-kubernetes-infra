@@ -1,0 +1,35 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            26:bd:02:6a:51:20:60:d5:87:52:12:49:44:b2:a4:c1:89:98:7d:7b
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = localca, emailAddress = localca@no-reply.com
+        Validity
+            Not Before: Oct  2 23:21:36 2024 GMT
+            Not After : Jun 29 23:21:36 2027 GMT
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = helm, emailAddress = helm@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:23:09:a8:ab:c7:00:90:db:9c:07:93:ab:d6:e8:
+                    5c:7c:dc:11:19:6d:02:ff:09:0f:4f:29:20:4a:8b:
+                    1a:5b:96:16:b5:ef:9a:78:98:3a:7d:91:68:e6:aa:
+                    af:83:a1:2c:77:b4:fe:98:ef:1d:ed:f8:72:3d:30:
+                    aa:20:69:8c:aa
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Subject Alternative Name: 
+                DNS:helm, DNS:helm.docker.localhost, DNS:host.minikube.internal, DNS:host.kind.internal, DNS:localhost
+            X509v3 Subject Key Identifier: 
+                CE:CF:55:5F:ED:B2:DD:81:CF:58:7C:20:28:5E:B4:09:EA:41:12:A9
+            X509v3 Authority Key Identifier: 
+                9D:E1:29:FB:12:98:1D:BC:F4:58:1F:4A:69:90:0E:D8:19:00:BE:E9
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:45:02:21:00:ac:8e:92:68:e8:a3:be:94:bd:f5:ca:0e:8d:
+        79:1b:e1:ad:6d:82:67:48:37:d2:ef:94:92:da:8f:ba:14:e3:
+        43:02:20:79:45:4d:e0:ef:99:64:9b:16:68:d3:28:7c:8b:41:
+        b2:34:b2:96:51:a7:5c:8e:e7:b6:79:2f:33:b1:c2:f3:f5

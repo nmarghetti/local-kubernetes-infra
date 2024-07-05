@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mychart-podinfo
+  labels:
+    fake-secret/cluster-secret: access-cluster-secret
+    fake-secret/cluster-store: access-cluster-store

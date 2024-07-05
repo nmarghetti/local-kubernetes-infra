@@ -1,0 +1,35 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: fake
+spec:
+  provider:
+    fake:
+      data:
+        - key: 'user'
+          value: 'someone'
+        - key: 'database'
+          value: |
+            {
+              "user": "john",
+              "password": "password",
+              "host": "localhost",
+              "url": "postgres://localhost"
+            }
+        - key: secrets
+          value: |
+            {
+              "default": {
+                "user": "admin",
+                "password": "default-password",
+                "database": "localhost"
+              },
+              "test": {
+                "password": "admin-test-db-password",
+                "database": "db-test"
+              }
+            }
+  conditions:
+    - namespaceSelector:
+        matchLabels:
+          fake-secret/cluster-store: access-cluster-store

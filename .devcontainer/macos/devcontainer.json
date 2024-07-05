@@ -1,0 +1,26 @@
+{
+  "build": {
+    "dockerfile": "Dockerfile.macos-aarch64"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "orta.vscode-jest",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vsliveshare.vsliveshare",
+        "EditorConfig.EditorConfig",
+        "mhutchie.git-graph",
+        "ms-vscode.vscode-typescript-next",
+        "stringham.move-ts",
+        "github.vscode-github-actions"
+      ]
+    }
+  },
+  "name": "Node.js & TypeScript",
+  "postCreateCommand": "npm install",
+  "remoteEnv": {
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
+  "remoteUser": "root"
+}

@@ -1,0 +1,17 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: external-secrets
+spec:
+  chart:
+    spec:
+      chart: external-secrets
+      sourceRef:
+        kind: HelmRepository
+        name: external-secrets-io
+        namespace: flux-system
+      # Remember to change the crds version also
+      version: 0.9.13
+  interval: 5m
+  values:
+    installCRDs: false

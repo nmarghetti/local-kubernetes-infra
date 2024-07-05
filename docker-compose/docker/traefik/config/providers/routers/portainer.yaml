@@ -1,0 +1,22 @@
+http:
+  services:
+    portainer:
+      loadBalancer:
+        servers:
+          - url: 'https://portainer:9443'
+
+  routers:
+    portainer:
+      entryPoints:
+        - web
+      rule: Host(`portainer.docker.localhost`)
+      service: portainer
+      middlewares:
+        - tls-redirect@file
+
+    tls-portainer:
+      entryPoints:
+        - websecure
+      rule: Host(`portainer.docker.localhost`)
+      service: portainer
+      tls: true

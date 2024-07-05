@@ -1,0 +1,23 @@
+api:
+  dashboard: true
+  insecure: false
+providers:
+  file:
+    directory: '/etc/traefik/providers'
+    watch: true
+  docker:
+    endpoint: 'unix:///var/run/docker.sock'
+    exposedByDefault: false
+entryPoints:
+  web:
+    address: ':80'
+  websecure:
+    address: ':443'
+log:
+  level: DEBUG
+# ping: {}
+# metrics:
+#   prometheus: {}
+serversTransport:
+  rootCAs:
+    - /etc/certificates/ca.crt

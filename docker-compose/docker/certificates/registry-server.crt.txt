@@ -1,0 +1,35 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            3a:9c:5e:3c:d6:94:bd:0d:6a:1c:85:85:d7:53:fa:7b:0d:44:5a:af
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = localca, emailAddress = localca@no-reply.com
+        Validity
+            Not Before: Oct  2 23:21:35 2024 GMT
+            Not After : Jun 29 23:21:35 2027 GMT
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = registry, emailAddress = registry@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:9d:ef:7d:33:85:24:1e:13:b0:f7:a0:a1:87:b9:
+                    09:80:92:ca:47:12:fa:7d:33:67:70:f5:74:de:95:
+                    3f:76:22:ce:95:f2:0a:cc:93:90:f2:d2:80:32:f3:
+                    fa:21:d9:3f:13:ac:20:9f:a3:49:7a:94:47:1b:fd:
+                    27:f5:80:0b:8f
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Subject Alternative Name: 
+                DNS:registry, DNS:host.minikube.internal, DNS:host.kind.internal, DNS:localhost
+            X509v3 Subject Key Identifier: 
+                A1:3A:4C:5C:B5:19:B1:83:69:88:1E:4A:29:C4:E9:FA:A1:2F:5A:77
+            X509v3 Authority Key Identifier: 
+                9D:E1:29:FB:12:98:1D:BC:F4:58:1F:4A:69:90:0E:D8:19:00:BE:E9
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:45:02:20:3a:7d:2a:09:3d:1d:0c:8e:62:63:19:ca:8e:10:
+        9a:48:33:c8:09:6c:ac:ef:4a:e9:a4:f8:f9:e6:b1:ae:17:b7:
+        02:21:00:88:bb:99:08:35:45:da:48:55:81:cb:e5:bc:72:27:
+        57:19:a5:cb:59:d5:75:99:af:cf:f3:a3:94:6a:ab:55:dd

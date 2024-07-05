@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: team-foo-level2-application
+spec:
+  serviceAccountName: team-foo
+  interval: 20s
+  dependsOn:
+    - name: team-foo-level1-insfrastructure
+      namespace: foo
+  path: ./k8s/flux-playground/flux-multi-tenant-replicate/tenants/team-foo/clusters/minikube/application
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: team-foo
+    namespace: foo
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: podinfo
+      namespace: foo-app

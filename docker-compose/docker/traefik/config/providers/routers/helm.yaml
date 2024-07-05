@@ -1,0 +1,22 @@
+http:
+  services:
+    helm:
+      loadBalancer:
+        servers:
+          - url: 'https://helm:8080'
+
+  routers:
+    helm:
+      entryPoints:
+        - web
+      rule: Host(`helm.docker.localhost`)
+      service: helm
+      middlewares:
+        - tls-redirect@file
+
+    tls-helm:
+      entryPoints:
+        - websecure
+      rule: Host(`helm.docker.localhost`)
+      service: helm
+      tls: true

@@ -1,0 +1,17 @@
+templates:
+  - config.yaml
+  - deployments.yaml
+  - ingress.yaml
+  - services.yaml
+tests:
+  - it: chart should match snapshot
+    release:
+      name: mychart
+    chart:
+      version: 0.0.1
+    values:
+      - values-base.yaml
+      - values-enabled.yaml
+      - values-full.yaml
+    asserts:
+      - matchSnapshot: {}

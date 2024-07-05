@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: playground-traefik-kind
+resources:
+  - ../../../flux/base/crds/traefik
+  - ../../../flux/base/helm-repositories/traefik
+  - ../../../flux/base/infrastructure/traefik-kind
+patches:
+  - target:
+      group: helm.toolkit.fluxcd.io
+      version: v2beta1
+      kind: HelmRelease
+      name: traefik
+    patch: |-
+      - op: replace
+        path: /spec/chart/spec/sourceRef/namespace
+        value: playground-traefik-kind

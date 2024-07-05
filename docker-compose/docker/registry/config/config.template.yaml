@@ -1,0 +1,31 @@
+version: 0.1
+log:
+  fields:
+    service: registry
+storage:
+  delete:
+    enabled: true
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: /var/lib/registry
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+    Access-Control-Allow-Origin: ['http://localhost:${REGISTRY_UI_PORT}']
+    Access-Control-Allow-Methods: ['HEAD', 'GET', 'OPTIONS', 'DELETE']
+    Access-Control-Allow-Headers: ['Authorization', 'Accept']
+    Access-Control-Max-Age: [1728000]
+    Access-Control-Allow-Credentials: [true]
+    Access-Control-Expose-Headers: ['Docker-Content-Digest']
+# https://docs.docker.com/registry/notifications/
+notifications:
+  endpoints:
+    - name: alistener
+      url: http://dkd.minikube/dkd/anonymous/docker-push?token=0IUUSwyB3xOsJxr4i1ixgdrZr4QjJK
+      # headers:
+      #   Authorization: [Bearer 0IUUSwyB3xOsJxr4i1ixgdrZr4QjJK]
+      timeout: 500ms
+      threshold: 5
+      backoff: 1s

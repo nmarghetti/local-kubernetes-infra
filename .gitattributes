@@ -2,7 +2,7 @@
 # git ls-files --eol
 
 # Normalize all line endings
-*	text=auto
+*	text=auto eol=lf
 
 # Ensure shell scripts use LF line endings
 *.sh text eol=lf

@@ -1,0 +1,16 @@
+fullnameOverride: ''
+nameOverride: ''
+
+dockerRegistry: docker.io
+dockerTag: latest
+
+vault:
+  enabled: false
+  secretRefreshInterval: '12h'
+  secretStoreKind: ClusterSecretStore
+  secretKeyPrefix: ''
+  environment: ''
+
+configs: {}
+
+apps: {}

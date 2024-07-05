@@ -1,0 +1,35 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            31:8f:2e:ed:5e:c2:ef:45:28:ca:30:80:55:01:c9:fc:48:43:f1:d1
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = localca, emailAddress = localca@no-reply.com
+        Validity
+            Not Before: Oct  2 23:21:35 2024 GMT
+            Not After : Jun 29 23:21:35 2027 GMT
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = portainer, emailAddress = portainer@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:3b:6a:57:1f:84:d9:ed:95:5d:af:6b:8e:9b:d2:
+                    89:ba:20:75:ef:af:00:30:5c:f8:d8:cf:a8:dc:de:
+                    41:e5:db:0e:1d:9a:cd:af:87:69:45:18:d9:0c:34:
+                    30:9d:ed:b5:4a:ff:83:37:0a:09:1c:ef:cb:b9:a3:
+                    a1:0b:b6:bf:42
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Subject Alternative Name: 
+                DNS:portainer, DNS:localhost, DNS:portainer.docker.localhost
+            X509v3 Subject Key Identifier: 
+                43:30:90:C3:4E:F9:A9:D4:A0:60:81:20:AD:76:C3:53:6E:0E:3C:32
+            X509v3 Authority Key Identifier: 
+                9D:E1:29:FB:12:98:1D:BC:F4:58:1F:4A:69:90:0E:D8:19:00:BE:E9
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:46:02:21:00:a8:1b:e5:58:d5:c4:ff:f6:43:a1:d8:01:ce:
+        fa:c7:a3:1f:ed:77:42:38:97:c6:ba:1b:57:c3:e8:e3:04:a5:
+        f9:02:21:00:e7:1b:be:a0:16:63:f2:a3:ed:03:a0:3c:52:09:
+        2c:c9:e4:c8:56:f8:f9:44:c6:d3:8a:71:71:c9:cc:c9:0e:f7

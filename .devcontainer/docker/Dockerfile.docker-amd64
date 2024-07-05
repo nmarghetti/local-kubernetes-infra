@@ -1,0 +1,120 @@
+FROM ubuntu:24.04
+
+ARG USERNAME=ubuntu
+ARG USER_UID=1000
+
+ENV HOSTNAME=DevContainer
+
+# docker
+ARG INSTALL_DOCKER=0
+ARG DOCKER_GID
+# kubectl
+ARG INSTALL_KUBECTL=0
+ARG KUBECTL_VERSION=1.31
+# k9s
+ARG INSTALL_K9S=0
+ARG K9S_VERSION=0.32.5
+# flux
+ARG INSTALL_FLUX=0
+ARG FLUX_VERSION=2.2.3
+ENV FLUX_VERSION=$FLUX_VERSION
+# kind
+ARG INSTALL_KIND=0
+ARG KIND_VERSION=0.22.0
+# minikube
+ARG INSTALL_MINIKUBE=0
+
+
+RUN DEBIAN_FRONTEND=noninteractive apt update \
+  && apt install -y \
+    ca-certificates \
+  && apt clean
+
+# Add certificates if any
+COPY certificates /certificates
+RUN if [ -f /certificates/ca-bundle.crt ]; then rm -f /certificates/ca-bundle.crt; fi \
+  && if [ "$(find /certificates -type f -name "*.crt" -exec basename '{}' \; | grep -cvE '^ca-bundle.crt$')" -ne 0 ]; then \
+    find /certificates -type f ! -name ca-bundle.crt -name "*.crt" -exec cp '{}' /usr/local/share/ca-certificates/ \;; fi \
+  && update-ca-certificates \
+  && rm -rf /certificates
+
+# Add the user
+RUN userdel --remove ubuntu \
+    && useradd --uid $USER_UID -m $USERNAME -s /bin/bash \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME \
+    && apt clean
+
+# Install some tools
+RUN DEBIAN_FRONTEND=noninteractive \
+  sudo apt update \
+  && sudo apt install -y git curl jq gnupg gettext vim moreutils netcat-openbsd iproute2 \
+  && sudo apt clean
+
+# Install yq
+RUN sudo curl -L -o /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+  && sudo chmod a+x /usr/bin/yq
+
+# Install docker
+# Add user to docker group
+RUN if test $INSTALL_DOCKER -eq 1; then \
+  sudo mkdir -p /etc/apt/keyrings \
+  && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+  && sudo chmod a+r /etc/apt/keyrings/docker.gpg \
+  && echo "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \"$(. /etc/os-release && echo "$VERSION_CODENAME")\" stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null \
+  && DEBIAN_FRONTEND=noninteractive sudo apt-get update \
+  && if test -n "$DOCKER_GID"; then sudo groupadd -g "$DOCKER_GID" docker; fi \
+  && sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
+  && sudo rm -rf /var/lib/apt/lists/* \
+  && sudo usermod -aG docker $USERNAME \
+  ; fi
+
+# Install flux
+RUN if test $INSTALL_FLUX -eq 1; then \
+  curl -sS https://fluxcd.io/install.sh | sudo bash \
+  ; fi
+
+# Install minikube
+RUN if test $INSTALL_MINIKUBE -eq 1; then \
+  sudo curl -fsSLo /usr/bin/minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
+  && sudo chmod a+x /usr/bin/minikube \
+  ; fi
+
+# Install kind
+RUN if test $INSTALL_KIND -eq 1; then \
+  sudo curl -fsSLo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 \
+  && sudo chmod a+x /usr/local/bin/kind \
+  ; fi
+
+# Install kubectl
+RUN if test $INSTALL_KUBECTL -eq 1; then \
+  curl -fsSL https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg \
+  && echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${KUBECTL_VERSION}/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list \
+  && DEBIAN_FRONTEND=noninteractive sudo apt-get update \
+  && sudo apt-get install -y kubectl \
+  && sudo rm -rf /var/lib/apt/lists/* \
+  ; fi
+
+# Install k9s
+RUN if test $INSTALL_K9S -eq 1; then \
+  curl -fsSL -o k9s_linux_amd64.deb https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_linux_amd64.deb \
+  && sudo apt install -y ./k9s_linux_amd64.deb \
+  && rm ./k9s_linux_amd64.deb \
+  ; fi
+
+USER $USERNAME
+
+# Setup user config
+COPY .devcontainer/shellrc.sh /home/$USERNAME/.shellrc.sh
+RUN curl -L https://raw.github.com/git/git/master/contrib/completion/git-prompt.sh > ~/.bash_git_prompt \
+    && echo "source ~/.bash_git_prompt" >> ~/.bashrc \
+    && echo "source ~/.shellrc.sh" >> ~/.bashrc
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+  && sudo mkdir /commandhistory \
+  && sudo touch /commandhistory/.bash_history \
+  && sudo chown -R $USERNAME /commandhistory \
+  && echo "$SNIPPET" >> ~/.bashrc
+
+ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt

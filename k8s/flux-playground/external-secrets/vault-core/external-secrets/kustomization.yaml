@@ -1,0 +1,6 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: external-secrets
+resources:
+  - ../../../../flux/base/helm-repositories-namespaced/external-secrets-io
+  - ../../../../flux/base/infrastructure-namespaced/external-secrets

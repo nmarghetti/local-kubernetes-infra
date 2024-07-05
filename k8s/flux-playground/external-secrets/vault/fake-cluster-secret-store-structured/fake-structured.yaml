@@ -1,0 +1,46 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: fake-structured
+spec:
+  provider:
+    fake:
+      data:
+        - key: secrets
+          value: |
+            {
+              "admin_password": {
+                "default": "default-password",
+                "test": "password",
+                "prod": "prod-password"
+              },
+              "db_password": {
+                "default": "default-pass",
+                "test": "pass",
+                "prod": "prod-pass"
+              },
+              "third_party_first_id": {
+                "default": "default-some_first_id",
+                "test": "some_first_id",
+                "prod": "prod-some_first_id"
+              },
+              "third_party_first_key":{
+                "default": "default-some_first_key",
+                "test": "some_first_key",
+                "prod": "prod-some_first_key"
+              },
+              "third_party_two_id": {
+                "default": "default-some_two_id",
+                "test": "some_two_id",
+                "prod": "prod-some_two_id"
+              },
+              "third_party_two_key": {
+                "default": "default-some_two_key",
+                "test": "some_two_key",
+                "prod": "prod-some_two_key"
+              }
+            }
+  conditions:
+    - namespaceSelector:
+        matchLabels:
+          fake-secret/cluster-store: access-cluster-store

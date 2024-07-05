@@ -1,0 +1,240 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+
+# version: '3'
+name: ${DOCKER_COMPOSE_NAME:-local-services}
+
+
+# https://www.educative.io/blog/advanced-yaml-syntax-cheatsheet#anchors
+# https://stackoverflow.com/questions/24090177/how-to-merge-yaml-arrays
+
+x-common-env: &cenv
+  USE_SSL: 0
+  USE_INIT_CONTAINER: 1
+  DEBUG_INIT_CONTAINER: 1
+
+x-portainer-env: &portainer-env
+  PORTAINER_ADMIN_PASSWORD: ${PORTAINER_ADMIN_PASSWORD:-F0jJ7XWo1TJKyhLQJ62Y}
+  PORTAINER_PORT: ${PORTAINER_PORT:-9000}
+
+x-gitea-env: &gitea-env
+  GITEA__user__ADMIN_NAME: gitadmin
+  GITEA__user__ADMIN_PASSWORD: v6ccouGZLBogfMn1AzL7
+  GITEA__user__ADMIN_EMAIL: no-reply@local.com
+
+
+# Define services
+services:
+  # curl  http://localhost:5007/v2/_catalog
+  registry:
+    container_name: docker-registry
+    image: registry:2
+    ports:
+      - ${REGISTRY_PORT:-5007}:5000
+    volumes:
+      - ./docker/registry/config/config.yaml:/etc/docker/registry/config.yml
+      - registry:/var/lib/registry
+
+  registry-ui:
+    container_name: docker-registry-ui
+    image: joxit/docker-registry-ui:latest
+    ports:
+      - ${REGISTRY_UI_PORT:-8087}:80
+    environment:
+      - REGISTRY_TITLE=My local Docker Registry
+      - REGISTRY_URL=http://localhost:${REGISTRY_PORT:-5007}
+      - SINGLE_REGISTRY=true
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.registry-ui.rule=Host(`registry.docker.localhost`)
+      # Redirect to locahost due to CORS that allow only localhost
+      - traefik.http.routers.registry-ui.middlewares=redirect-registry-ui
+      - traefik.http.middlewares.redirect-registry-ui.redirectregex.regex=^(https?)://registry.docker.localhost(.*)$
+      - traefik.http.middlewares.redirect-registry-ui.redirectregex.replacement=$${1}://localhost:${REGISTRY_UI_PORT:-8087}$${2}
+
+    depends_on:
+      - registry
+
+  init-gitea:
+    build:
+      # no_cache: true
+      context: ..
+      dockerfile: ./docker-compose/docker/Dockerfile.init-container
+    container_name: init-gitea
+    command: /app/setup.sh
+    # command: sh -c 'tail -f /dev/null'
+    environment:
+      <<: [*cenv,*gitea-env]
+    depends_on:
+      gitea:
+        condition: service_started
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $HOME/.ssh:/root/.ssh
+      - ./docker/gitea/setup.sh:/app/setup.sh
+      - ../scripts/common.sh:/app/scripts/common.sh
+      - ../scripts/setup_gitea.sh:/app/scripts/setup_gitea.sh
+
+  gitea:
+    image: gitea/gitea
+    container_name: gitea
+    environment:
+      <<: *gitea-env
+      USER_UID: 1000
+      USER_GID: 1000
+      # - USER_UID=0
+      # - USER_GID=0
+      # docker run -it --rm gitea/gitea gitea generate secret SECRET_KEY
+      GITEA__security__SECRET_KEY: 5F72ZSKUVeMNbf3upRZiyFugdZYbOJW0pYKTpulF4GM0aAZmXfDoATFEGl8G2rUu
+      # docker run -it --rm  gitea/gitea gitea generate secret INTERNAL_TOKEN
+      GITEA__security__INTERNAL_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE3MTAxMTk1NzB9.VFEJKgUs3KjYyB1rqr3QdpUsiEwS3rpPWc7chkZ59IY
+      # - GITEA__RUN_USER=apprunner
+      # - GITEA__RUN_USER=root
+      GITEA__server__ROOT_URL: http://localhost:${GITEA_PORT:-3000}/
+      DISABLE_REGISTRATION: true
+      DB_TYPE: sqlite3
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.gitea.rule=Host(`gitea.docker.localhost`)
+      - traefik.http.services.gitea.loadbalancer.server.port=3000
+    volumes:
+      - gitea:/data
+      # - ./gitea/data:/data
+      # - ./gitea/var:/var/lib/gitea
+      # - ./gitea/config:/etc/gitea
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "${GITEA_PORT:-3000}:3000"
+      - "222:22"
+    # user: git
+
+  # curl http://localhost:8088/api/charts
+  helm:
+    container_name: helm-registry
+    image: chartmuseum/chartmuseum
+    ports:
+      - ${HELM_PORT:-8088}:8080
+    environment:
+      - STORAGE=local
+      - STORAGE_LOCAL_ROOTDIR=/bitnami/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.helm.rule=Host(`helm.docker.localhost`)
+    volumes:
+      - helm:/bitnami/data
+    # Either run this command after container is up or leave user as root
+    # docker exec -u root helm-registry chown 1000:1000 /bitnami/data
+    user: root
+
+  init-portainer:
+    build:
+      # additional_contexts:
+      #   alpine: docker-image://docker.io/library/alpine:latest
+      # no_cache: true
+      context: ..
+      dockerfile: ./docker-compose/docker/Dockerfile.init-container
+    container_name: init-portainer
+    command: /app/setup.sh
+    # command: sh -c 'tail -f /dev/null'
+    environment:
+      <<: [*cenv,*portainer-env]
+    depends_on:
+      portainer:
+        condition: service_started
+    volumes:
+      - ./docker/portainer/setup.sh:/app/setup.sh
+      - ../scripts/common.sh:/app/scripts/common.sh
+      - ../scripts/setup_portainer.sh:/app/scripts/setup_portainer.sh
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    # pull_policy: always
+    command: --http-enabled
+    ports:
+      - ${PORTAINER_PORT:-9400}:9000
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.rule=Host(`portainer.docker.localhost`)
+      # - traefik.http.routers.portainer.service=portainer
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer:/data
+    restart: always
+
+  dnsmasq:
+    container_name: dnsmasq
+    image: jpillora/dnsmasq
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./docker/dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf
+    environment:
+      - PORT=${DNSMASQ_UI_PORT:-3053}
+      - HTTP_USER=admin
+      - HTTP_PASS=dnsmasq
+    command: -p ${DNSMASQ_PORT:-53}
+
+  podinfo:
+    container_name: podinfo
+    image: stefanprodan/podinfo
+    ports:
+      - ${PODINFO_PORT:-9898}:9898
+    command: ./podinfo --host=0.0.0.0
+    environment:
+      - PODINFO_UI_MESSAGE=Hello from Docker Compose ($PWD). Check swagger at /swagger/index.html
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.podinfo.rule=Host(`podinfo.docker.localhost`)
+
+  whoami:
+    container_name: whoami
+    image: containous/whoami
+    ports:
+      - ${WHOAMI_PORT:-9080}:80
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)
+
+  nginx:
+    container_name: nginx
+    image: nginx
+    ports:
+      - ${NGINX_PORT:-8081}:80
+    volumes:
+      - ./docker/nginx/index.html:/usr/share/nginx/html/index.html
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.nginx.rule=Host(`localhost`)
+
+  traefik:
+    container_name: traefik
+    image: traefik
+    command:
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+    ports:
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    labels:
+      - traefik.enable=true
+      - traefik.log.level=DEBUG
+      - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.docker.localhost`)
+      - traefik.http.routers.traefik-dashboard.service=api@internal
+      - traefik.http.routers.traefik-dashboard.middlewares=myauth
+      - traefik.http.middlewares.myauth.basicauth.users=admin:$$apr1$$mgoktys3$$HMzdD2rS7QxXJ1zlgYuis1 # admin: traefik (generated with `htpasswd -bn admin traefik` or `printf "admin:$(openssl passwd -apr1 traefik)\n"`)
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  registry:
+  helm:
+  gitea:
+    driver: local
+  portainer:

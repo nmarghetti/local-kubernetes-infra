@@ -1,0 +1,27 @@
+# syntax = edrevo/dockerfile-plus
+
+FROM mcr.microsoft.com/devcontainers/typescript-node:1-18
+
+INCLUDE+ ../Dockerfile.begin
+
+RUN sudo apt update && \
+  sudo apt upgrade -y && \
+  curl -s -k https://api.github.com/repos/Hakky54/certificate-ripper/releases/latest \
+  | grep "browser_download_url.*linux-amd64.tar.gz" \
+  | cut -d : -f 2,3 \
+  | tr -d '\"' \
+  | wget -qi - && \
+  tar -xzf *linux-amd64.tar.gz -C /tmp/ && \
+  sudo /tmp/crip export pem --url=https://www.google.com --destination /usr/local/share/ca-certificates/ && \
+  sudo update-ca-certificates && \
+  curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest \
+  | grep "browser_download_url.*linux_x64.tar.gz" \
+  | cut -d : -f 2,3 \
+  | tr -d '\"' \
+  | wget -qi - && \
+  tar -xzf *linux_x64.tar.gz && \
+  sudo mv gitleaks /usr/local/bin/ && \
+  sudo rm *.tar.gz
+
+
+INCLUDE+ ../Dockerfile.end

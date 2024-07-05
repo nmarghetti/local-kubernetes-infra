@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dkd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dkd
+  template:
+    metadata:
+      labels:
+        app: dkd
+    spec:
+      containers:
+        - name: dkd
+          image: host.minikube.internal:5007/dkd
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8100
+          env:
+            - name: ALLOW_UNAUTHENTICATED
+              value: 'true'
+            - name: LOG_REQUEST
+              value: 'true'
+            - name: DKD_BASE_URL
+              value: /dkd
+          livenessProbe:
+            httpGet:
+              path: /dkd/docs
+              port: 8100
+          startupProbe:
+            httpGet:
+              path: /dkd/docs
+              port: 8100
+            initialDelaySeconds: 5
+            failureThreshold: 15
+            periodSeconds: 1
+          resources:
+            requests:
+              cpu: 1
+              memory: 100Mi
+            limits:
+              cpu: 1
+              memory: 200Mi

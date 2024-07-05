@@ -1,0 +1,147 @@
+// https://hub.docker.com/r/microsoft/vscode-devcontainers
+// https://containers.dev/templates
+// https://containers.dev/features
+{
+  "name": "[Docker] Local docker/k8s architecture",
+  // "mounts": ["source=${localEnv:HOME}${localEnv:USERPROFILE}/.Xauthority,target=/data/.Xauthority,type=bind,consistency=cached"],
+  "mounts": [
+    "source=bashhistory,target=/commandhistory,type=volume",
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    "source=${localEnv:HOME}/.kube,target=${localEnv:HOME}/.kube,type=bind,consistency=cached"
+  ],
+  "postCreateCommand": {
+    // "setup_docker": "sudo groupmod -g $(stat -c '%g' /var/run/docker.sock) docker && sudo chown root:docker /var/run/docker.sock",
+    "welcome": "echo 'Welcome to dev container world !!!'"
+  },
+  "remoteEnv": {
+    "XSERVER_DISPLAY": "${localEnv:DISPLAY}"
+  },
+  "build": {
+    "dockerfile": "Dockerfile.docker-amd64",
+    "context": "../..",
+    "args": {
+      "USERNAME": "${localEnv:USER}",
+      "INSTALL_DOCKER": "1",
+      "DOCKER_GID": "${DOCKER_GID}",
+      "INSTALL_KUBECTL": "1",
+      "INSTALL_K9S": "1",
+      "INSTALL_FLUX": "1",
+      "INSTALL_KIND": "1",
+      "INSTALL_MINIKUBE": "1"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker", // Docker
+        "esbenp.prettier-vscode", // Many language formatter
+        "dbaeumer.vscode-eslint", // Javascript linter
+        "ms-vsliveshare.vsliveshare", // Sharing VSCode
+        "editorconfig.editorconfig", // Support for .editorconfig
+        "mhutchie.git-graph", // Git graph
+        "github.vscode-github-actions", // Github actions
+        "nrwl.angular-console", // NX
+        "Orta.vscode-jest", // Jest
+        "ms-kubernetes-tools.vscode-kubernetes-tools" // Kubernetes
+      ],
+      "settings": {
+        // VSCode
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+
+        "files.eol": "\n",
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.associations": {
+          "*.snap": "log",
+          "*.md": "markdown",
+          "*.feature": "feature"
+        },
+        "files.exclude": {
+          "**/*.pyc": true
+        },
+        "search.exclude": {
+          "**/build": true
+        },
+        "[log]": {
+          "files.trimTrailingWhitespace": false,
+          "editor.formatOnSave": false
+        },
+
+        "workbench.colorTheme": "Visual Studio Dark",
+
+        "javascript.preferences.quoteStyle": "single",
+
+        // esbenp.prettier-vscode
+        "prettier.bracketSpacing": true,
+        "prettier.endOfLine": "lf",
+        "prettier.htmlWhitespaceSensitivity": "css",
+        "prettier.insertPragma": false,
+        "prettier.bracketSameLine": false,
+        "prettier.jsxSingleQuote": false,
+        "prettier.printWidth": 140,
+        "prettier.proseWrap": "preserve",
+        "prettier.quoteProps": "as-needed",
+        "prettier.requirePragma": false,
+        "prettier.semi": true,
+        "prettier.singleQuote": true,
+        "prettier.tabWidth": 2,
+        "prettier.trailingComma": "all",
+        "prettier.useTabs": false,
+        "prettier.vueIndentScriptAndStyle": false,
+
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[html]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[markdown]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[graphql]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[css]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[scss]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+
+        // foxundermoon.shell-format
+        "[shellscript]": {
+          "editor.defaultFormatter": "foxundermoon.shell-format",
+          "editor.formatOnSave": true
+        },
+        "shellformat.flag": "-i 2 -ci"
+      }
+    }
+  }
+}

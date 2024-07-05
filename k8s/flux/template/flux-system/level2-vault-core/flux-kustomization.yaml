@@ -1,0 +1,15 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: level2-vault-core
+spec:
+  interval: 20s
+  dependsOn:
+    - name: level1-crds
+  path: './k8s/.../vault-core'
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  healthChecks: []

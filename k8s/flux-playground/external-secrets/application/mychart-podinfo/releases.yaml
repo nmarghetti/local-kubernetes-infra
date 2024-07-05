@@ -1,0 +1,52 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: mychart-podinfo
+spec:
+  chart:
+    spec:
+      chart: mychart
+      sourceRef:
+        kind: HelmRepository
+        name: mychart
+        namespace: flux-system
+      version: 1.0.0
+  interval: 5m
+  values:
+    vault:
+      enabled: true
+      secretStore: fake-config-templated
+      environment: test
+
+    apps:
+      podinfo:
+        deployment:
+          enabled: true
+          image:
+            registry: stefanprodan
+          vault:
+            secretConfig:
+              database:
+                password: db_password
+              api:
+                admin: admin_password
+            templateSecretConfig:
+              template-connection: 'postgres://user:{{ template "getEnvValue" (dict "context" $databaseContext "key" "db_password") }}@postgres-server/database'
+              connection: 'postgres://user:{{@database:db_password}}@postgres-server/database'
+              connection-multiline: |
+                postgres://user:{{@database:db_password}}@postgres-server/database
+              connection-json: |
+                {
+                  "connection": "postgres://user:{{@database:db_password}}@postgres-server/database",
+                  "admin": "{{@api:admin_password}}"
+                }
+              PODINFO_UI_MESSAGE: 'Hello from cluster. Check swagger at /swagger/index.html. I also have a secret, the admin api password is {{@api:admin_password}}'
+          ports:
+            - name: podinfo
+              containerPort: 9898
+        service:
+          enabled: true
+          ports:
+            - name: podinfo
+              port: 9898
+              targetPort: podinfo

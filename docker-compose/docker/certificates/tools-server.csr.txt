@@ -1,0 +1,24 @@
+Certificate Request:
+    Data:
+        Version: 1 (0x0)
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = local tools, emailAddress = local tools@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:01:26:02:b4:51:bf:eb:78:f4:bd:f4:15:57:31:
+                    73:f6:88:0e:a7:c3:d8:cb:03:19:6a:89:3e:57:6c:
+                    54:5e:f6:65:29:ac:d7:65:af:5f:a2:7b:c4:2c:05:
+                    0d:3d:8f:f8:d3:95:78:7f:33:ff:1e:c0:db:f5:2d:
+                    3b:11:8e:c2:51
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        Attributes:
+            (none)
+            Requested Extensions:
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:44:02:20:2b:92:c3:c1:ef:68:a8:04:bb:25:65:4e:3f:68:
+        ec:42:35:f3:0a:7e:f0:b6:c7:49:dc:38:27:d8:46:61:e3:66:
+        02:20:6a:af:e8:28:c4:64:45:e8:78:97:e1:12:75:86:c2:f9:
+        b3:f4:0a:45:a0:19:fd:5e:f2:bb:20:d2:56:43:6a:91

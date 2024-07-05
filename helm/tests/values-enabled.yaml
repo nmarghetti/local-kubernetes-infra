@@ -1,0 +1,20 @@
+configs:
+  common:
+    enabled: true
+
+apps:
+  backend:
+    deployment:
+      enabled: true
+    service:
+      enabled: true
+    ingress:
+      enabled: true
+
+  frontend:
+    deployment:
+      enabled: true
+    service:
+      enabled: true
+    ingress:
+      enabled: true

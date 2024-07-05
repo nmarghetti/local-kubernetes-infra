@@ -1,0 +1,58 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: replicator
+spec:
+  values:
+    image:
+      # In case downloading from internet fails, you can use the following to pull from a local registry
+      # repository: host.minikube.internal:5007/mittwald/kubernetes-replicator
+      # tag: v2.11.0
+    replicationEnabled:
+      secrets: true
+      configMaps: true
+      roles: false
+      roleBindings: false
+      serviceAccounts: false
+    # grantClusterAdmin: true
+    # serviceAccount:
+    #   create: true
+    #   privileges:
+    #     - apiGroups: ['']
+    #       resources: ['secrets', 'configmaps']
+    #     - apiGroups: ['', 'apps', 'extensions']
+    #       resources:
+    #         [
+    #           'secrets',
+    #           'configmaps',
+    #           'roles',
+    #           'rolebindings',
+    #           'cronjobs',
+    #           'deployments',
+    #           'events',
+    #           'ingresses',
+    #           'jobs',
+    #           'pods',
+    #           'pods/attach',
+    #           'pods/exec',
+    #           'pods/log',
+    #           'pods/portforward',
+    #           'services',
+    #         ]
+    #     - apiGroups: ['batch']
+    #       resources:
+    #         [
+    #           'configmaps',
+    #           'cronjobs',
+    #           'deployments',
+    #           'events',
+    #           'ingresses',
+    #           'jobs',
+    #           'pods',
+    #           'pods/attach',
+    #           'pods/exec',
+    #           'pods/log',
+    #           'pods/portforward',
+    #           'services',
+    #         ]

@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "dkd"
+version = "0.1.0"
+description = ""
+authors = ["noreply <noreply@noreply.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+dkd = "dkd.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.94.1"
+uvicorn = "^0.21.0"
+pyyaml = "^6.0"
+pyjwt = "^2.6.0"
+passlib = "^1.7.4"
+python-jose = "^3.3.0"
+pytz = "^2022.7.1"
+python-multipart = "^0.0.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[virtualenvs]
+in-project = true

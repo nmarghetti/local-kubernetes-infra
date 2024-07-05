@@ -1,0 +1,8 @@
+dist
+__pycache__
+flux/deployment.yaml
+coredns/configmap.yaml
+/build
+/tmp
+/docker-compose/docker-compose.env
+/docker_entrypoint.sh

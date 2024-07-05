@@ -1,0 +1,24 @@
+Certificate Request:
+    Data:
+        Version: 1 (0x0)
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = traefik, emailAddress = traefik@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:9f:a1:7b:13:6c:cd:a0:b4:95:a3:c2:3f:ae:1d:
+                    45:c7:ad:29:90:32:38:12:67:c2:b7:40:cb:b7:04:
+                    ef:ce:9e:bc:8a:52:36:15:9e:60:a9:84:a3:f7:13:
+                    42:9a:00:2e:f8:76:d2:35:34:ec:84:ce:6c:48:31:
+                    93:13:09:06:6e
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        Attributes:
+            (none)
+            Requested Extensions:
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:45:02:20:11:6b:17:da:10:87:d8:a3:5a:8e:9a:4a:4b:a2:
+        2e:c0:51:df:82:db:46:9a:98:2f:15:e7:99:f9:a4:be:7f:19:
+        02:21:00:91:4f:77:8a:26:85:79:fa:0c:d0:ec:bb:8b:0d:6e:
+        2f:26:d8:fd:41:04:27:fd:bd:97:c6:0a:61:d0:70:39:40

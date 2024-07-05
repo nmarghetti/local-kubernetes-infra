@@ -1,0 +1,15 @@
+# Ignore all
+**
+
+# Fore dev container
+!/.devcontainer/shellrc.sh
+
+
+!/certificates
+!/scripts
+!/start.sh
+!/docker-compose
+!/docker_entrypoint.sh
+!/helm
+!/k8s
+!/dkd

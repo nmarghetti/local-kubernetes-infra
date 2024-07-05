@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: home
+data:
+  index.html: |
+    <!-- ######## This is a comment, visible only in the source editor  ######## -->
+    <h1 style="color: #4485b8;">Here are some services available</h1>
+    <p></p>
+    <ul>
+    <li>Traefik dashboard - <a href="http://dashboard.traefik.minikube/" target="_blank" rel="noopener">http://dashboard.traefik.minikube/</a></li>
+    <li>Whoami - <a href="http://whoami.traefik.minikube/" target="_blank" rel="noopener">http://whoami.traefik.minikube/</a></li>
+    <li>Podinfo - <a href="http://podinfo.traefik.minikube/" target="_blank" rel="noopener">http://podinfo.traefik.minikube/</a></li>
+    <li>Podinfo swagger - <a href="http://podinfo.traefik.minikube/swagger/index.html" target="_blank" rel="noopener">http://podinfo.traefik.minikube/swagger/index.html</a></li>
+    </ul>
+    <p style="text-align: left;"></p>
+    <p style="text-align: left;"></p>
+    <p style="text-align: left;"></p>
+    <p style="text-align: center;">Generated with <a href="https://html6.com/editor/" target="_blank" rel="noopener">https://html6.com/editor/</a></p>

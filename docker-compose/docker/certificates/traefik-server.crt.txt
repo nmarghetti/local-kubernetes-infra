@@ -1,0 +1,35 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            2f:c3:35:47:67:83:41:c9:aa:04:8c:a6:c6:ea:86:7a:da:3b:78:45
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = localca, emailAddress = localca@no-reply.com
+        Validity
+            Not Before: Oct  2 23:21:35 2024 GMT
+            Not After : Jun 29 23:21:35 2027 GMT
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = traefik, emailAddress = traefik@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:9f:a1:7b:13:6c:cd:a0:b4:95:a3:c2:3f:ae:1d:
+                    45:c7:ad:29:90:32:38:12:67:c2:b7:40:cb:b7:04:
+                    ef:ce:9e:bc:8a:52:36:15:9e:60:a9:84:a3:f7:13:
+                    42:9a:00:2e:f8:76:d2:35:34:ec:84:ce:6c:48:31:
+                    93:13:09:06:6e
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Subject Alternative Name: 
+                DNS:traefik, DNS:traefik.docker.localhost
+            X509v3 Subject Key Identifier: 
+                23:4A:A3:AD:73:7D:07:15:CF:D1:6D:BF:5B:C0:95:CA:42:32:D7:4B
+            X509v3 Authority Key Identifier: 
+                9D:E1:29:FB:12:98:1D:BC:F4:58:1F:4A:69:90:0E:D8:19:00:BE:E9
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:45:02:20:14:49:a5:06:28:b1:33:8a:95:e9:d4:0b:fc:f6:
+        5e:05:c4:e5:76:1c:71:96:f3:77:02:2d:44:69:e2:f8:b5:a6:
+        02:21:00:c7:d3:cd:6c:3a:d0:93:d4:2a:24:47:78:6b:c5:59:
+        7c:4d:7a:13:95:0b:27:bf:a7:33:cf:c6:e2:cf:5e:61:8c

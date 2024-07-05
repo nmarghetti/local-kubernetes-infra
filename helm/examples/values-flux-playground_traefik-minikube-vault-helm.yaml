@@ -1,0 +1,114 @@
+apps:
+  home:
+    deployment:
+      container:
+        volumeMounts:
+          - mountPath: /usr/share/nginx/html/index.html
+            name: home
+            subPath: index.html
+      enabled: true
+      image:
+        name: nginx
+        registry: docker.io
+      ports:
+        - 80
+      volumes:
+        - configMap:
+            items:
+              - key: index.html
+                path: index.html
+            name: ${chart[home]}
+          name: home
+    ingress:
+      enabled: true
+      host: home.minikube
+      ingressClassName: nginx
+      kind: networking
+      port: 80
+    service:
+      enabled: true
+      ports:
+        - 80
+  podinfo:
+    deployment:
+      enabled: true
+      image:
+        registry: stefanprodan
+      ports:
+        - containerPort: 9898
+          name: podinfo
+      vault:
+        secretConfig:
+          application:
+            api-admin-password: api.admin.password
+        templateSecretConfig:
+          PODINFO_UI_MESSAGE: Hello from cluster. Check swagger at /swagger/index.html. I also have a secret, the api admin password is {{@application:api.admin.password}}
+    ingress:
+      enabled: true
+      entryPoints:
+        - web
+      ingressClassName: traefik
+      kind: traefik
+      match: Host(`podinfo.traefik.minikube`)
+      port: 9898
+    service:
+      enabled: true
+      ports:
+        - name: podinfo
+          port: 9898
+          targetPort: podinfo
+  whoami:
+    deployment:
+      enabled: true
+      image:
+        registry: containous
+      ports:
+        - containerPort: 80
+          name: http
+    ingress:
+      enabled: true
+      entryPoints:
+        - web
+      ingressClassName: traefik
+      kind: traefik
+      routes:
+        - kind: Rule
+          match: Host(`whoami.traefik.minikube`)
+          middlewares:
+            - name: add-foo-bar
+            - name: replace-path-regex
+            - name: strip-prefix
+            - name: strip-prefix
+            - name: custom-header
+          services:
+            - kind: Service
+              name: ${servicename}
+              port: 80
+    service:
+      enabled: true
+      ports:
+        - name: http
+          port: 80
+          targetPort: http
+configs:
+  home:
+    data:
+      index.html: |
+        <!-- ######## This is a comment, visible only in the source editor  ######## -->
+        <h1 style="color: #4485b8;">Here are some services available</h1>
+        <p></p>
+        <ul>
+        <li>Traefik dashboard - <a href="http://dashboard.traefik.minikube/" target="_blank" rel="noopener">http://dashboard.traefik.minikube/</a></li>
+        <li>Whoami - <a href="http://whoami.traefik.minikube/" target="_blank" rel="noopener">http://whoami.traefik.minikube/</a></li>
+        <li>Podinfo - <a href="http://podinfo.traefik.minikube/" target="_blank" rel="noopener">http://podinfo.traefik.minikube/</a></li>
+        <li>Podinfo swagger - <a href="http://podinfo.traefik.minikube/swagger/index.html" target="_blank" rel="noopener">http://podinfo.traefik.minikube/swagger/index.html</a></li>
+        </ul>
+        <p style="text-align: left;"></p>
+        <p style="text-align: left;"></p>
+        <p style="text-align: left;"></p>
+        <p style="text-align: center;">Generated with <a href="https://html6.com/editor/" target="_blank" rel="noopener">https://html6.com/editor/</a></p>
+    enabled: true
+vault:
+  enabled: true
+  secretStore: store
+  secretStoreKind: SecretStore

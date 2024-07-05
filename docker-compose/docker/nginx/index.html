@@ -1,0 +1,48 @@
+<!-- ######## This is a comment, visible only in the source editor  ######## -->
+<h1 style="color: #4485b8">Here is the list of all services</h1>
+<p></p>
+<p><strong>Direct access from docker compose</strong></p>
+<ul>
+  <li>Portainer - <a href="http://localhost:9400/" target="_blank" rel="noopener">http://localhost:9400/</a></li>
+  <li>Gitea - <a href="http://localhost:3000/" target="_blank" rel="noopener">http://localhost:3000/</a></li>
+  <li>Docker registry - <a href="http://localhost:8087/" target="_blank" rel="noopener">http://localhost:8087/</a></li>
+  <li>Helm registry - <a href="http://localhost:8088/api/charts" target="_blank" rel="noopener">http://localhost:8088/api/charts</a></li>
+  <li>Whoami - <a href="http://localhost:9080/" target="_blank" rel="noopener">http://localhost:9080/</a></li>
+  <li>Podinfo - <a href="http://localhost:9898/" target="_blank" rel="noopener">http://localhost:9898/</a></li>
+  <li>Traefik dashboard - <a href="http://localhost:8080/" target="_blank" rel="noopener">http://localhost:8080/</a></li>
+  <li>Dnsmasq - <a href="http://localhost:3053/" target="_blank" rel="noopener">http://localhost:3053/</a></li>
+</ul>
+<p><strong>Access if traefik in docker compose is activated</strong></p>
+<ul>
+  <li>Portainer - <a href="http://portainer.docker.localhost/" target="_blank" rel="noopener">http://portainer.docker.localhost/</a></li>
+  <li>Gitea - <a href="http://gitea.docker.localhost/" target="_blank" rel="noopener">http://gitea.docker.localhost/</a></li>
+  <li>
+    Docker registry - <a href="http://registry.docker.localhost/" target="_blank" rel="noopener">http://registry.docker.localhost/</a>
+  </li>
+  <li>
+    Helm registry -
+    <a href="http://helm.docker.localhost/api/charts" target="_blank" rel="noopener">http://helm.docker.localhost/api/charts</a>
+  </li>
+  <li>Whoami - <a href="http://whoami.docker.localhost/" target="_blank" rel="noopener">http://whoami.docker.localhost/</a></li>
+  <li>Podinfo - <a href="http://podinfo.docker.localhost/" target="_blank" rel="noopener">http://podinfo.docker.localhost/</a></li>
+  <li>
+    Traefik dashboard - <a href="http://traefik.docker.localhost/" target="_blank" rel="noopener">http://traefik.docker.localhost/</a>
+  </li>
+</ul>
+<p><strong>Access from cluster, to be opened in browser through WSL</strong></p>
+<p>
+  You can run the minikube traefik flux playground with the following command:
+  <code>./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube --docker-services "gitea helm dnsmasq"</code>
+</p>
+<ul>
+  <li>
+    Traefik dashboard - <a href="http://dashboard.traefik.minikube/" target="_blank" rel="noopener">http://dashboard.traefik.minikube/</a>
+  </li>
+  <li>Whoami - <a href="http://whoami.traefik.minikube/" target="_blank" rel="noopener">http://whoami.traefik.minikube/</a></li>
+</ul>
+<p style="text-align: left"></p>
+<p style="text-align: left"></p>
+<p style="text-align: left"></p>
+<p style="text-align: center">
+  Generated with <a href="https://html6.com/editor/" target="_blank" rel="noopener">https://html6.com/editor/</a>
+</p>

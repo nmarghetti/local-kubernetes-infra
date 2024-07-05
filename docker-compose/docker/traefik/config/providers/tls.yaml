@@ -1,0 +1,19 @@
+tls:
+  stores:
+    # define the default certificate to use when SNI is not available
+    # https://doc.traefik.io/traefik/https/tls/#default-certificate
+    default:
+      defaultCertificate:
+        certFile: /etc/certificates/traefik-server.crt
+        keyFile: /etc/certificates/traefik-server.key
+
+  # Certificates to use for the routers, that will be shown in the browser
+  certificates:
+    - certFile: /etc/certificates/traefik-server.crt
+      keyFile: /etc/certificates/traefik-server.key
+    - certFile: /etc/certificates/portainer-server.crt
+      keyFile: /etc/certificates/portainer-server.key
+    - certFile: /etc/certificates/helm-server.crt
+      keyFile: /etc/certificates/helm-server.key
+    - certFile: /etc/certificates/tools-server.crt
+      keyFile: /etc/certificates/tools-server.key

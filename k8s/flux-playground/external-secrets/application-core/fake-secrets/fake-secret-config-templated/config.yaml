@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secrets-config
+data:
+  annotations: |
+    last-synced: {{ now }}
+
+  api: |
+    {{ $env := "test" }}
+
+    {{ $apiContext := dict "data" (.api | fromJson) "env" $env }}
+    {{ $databaseContext := dict "data" (.database | fromJson) "env" $env }}
+    {{ $thirdPartyContext := dict "data" (.thirdParty | fromJson) "env" $env }}
+
+    {{- define "getEnvValue" -}}
+      {{- $data := index .context.data .key }}
+      {{- if index $data .context.env }}
+        {{- printf "%s" (index $data .context.env) }}
+      {{- else }}
+        {{- printf "%s" (index $data "default") }}
+      {{- end }}
+    {{- end }}
+
+    admin_password: '{{ template "getEnvValue" (dict "context" $apiContext  "key" "admin_password") }}'
+
+    db_password: '{{ template "getEnvValue" (dict "context" $databaseContext  "key" "db_password") }}'
+
+    third_party_first_id: '{{ template "getEnvValue" (dict "context" $thirdPartyContext  "key" "third_party_first_id") }}'
+    third_party_first_key: '{{ template "getEnvValue" (dict "context" $thirdPartyContext  "key" "third_party_first_key") }}'

@@ -1,0 +1,32 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "aws-secret-handler list",
+      "type": "debugpy",
+      "python": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/python",
+      "program": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/aws-secret-handler",
+      "request": "launch",
+      "args": ["--region", "eu-west-1", "--project", "project", "list", "--secrets", "cluster"]
+    },
+    {
+      "name": "aws-secret-handler export",
+      "type": "debugpy",
+      "python": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/python",
+      "program": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/aws-secret-handler",
+      "request": "launch",
+      "args": ["--region", "eu-west-1", "--project", "project", "export", "--secrets", "cluster"]
+    },
+    {
+      "name": "aws-secret-handler diff",
+      "type": "debugpy",
+      "python": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/python",
+      "program": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/aws-secret-handler",
+      "request": "launch",
+      "args": ["--region", "eu-west-1", "--project", "project", "diff", "--secrets", "cluster"]
+    }
+  ]
+}

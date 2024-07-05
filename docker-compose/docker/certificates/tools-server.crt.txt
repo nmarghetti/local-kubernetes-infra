@@ -1,0 +1,35 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            59:f3:ec:d4:b1:d6:0e:21:8d:1d:a5:4c:59:f9:15:c3:3b:51:fc:4e
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = localca, emailAddress = localca@no-reply.com
+        Validity
+            Not Before: Oct  2 23:21:36 2024 GMT
+            Not After : Jun 29 23:21:36 2027 GMT
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = local tools, emailAddress = local tools@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:01:26:02:b4:51:bf:eb:78:f4:bd:f4:15:57:31:
+                    73:f6:88:0e:a7:c3:d8:cb:03:19:6a:89:3e:57:6c:
+                    54:5e:f6:65:29:ac:d7:65:af:5f:a2:7b:c4:2c:05:
+                    0d:3d:8f:f8:d3:95:78:7f:33:ff:1e:c0:db:f5:2d:
+                    3b:11:8e:c2:51
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Subject Alternative Name: 
+                DNS:whoami, DNS:whoami.docker.localhost
+            X509v3 Subject Key Identifier: 
+                DF:47:31:55:64:1A:E7:05:07:E0:11:0F:65:70:86:D1:FE:E1:4A:A6
+            X509v3 Authority Key Identifier: 
+                9D:E1:29:FB:12:98:1D:BC:F4:58:1F:4A:69:90:0E:D8:19:00:BE:E9
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:44:02:20:2c:49:ec:dd:b4:fc:3c:c5:a9:f9:e7:59:d6:a9:
+        11:cf:71:87:5b:c5:84:e8:0c:c1:3e:7a:93:d3:31:73:48:b6:
+        02:20:3c:a1:22:9f:bd:9a:61:3f:c3:7b:07:32:83:97:97:9f:
+        f1:08:c3:31:1e:7c:70:b2:e7:bc:e7:89:a4:41:a0:22

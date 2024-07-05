@@ -1,0 +1,107 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: fake-config-templated
+spec:
+  provider:
+    fake:
+      data:
+        - key: secrets
+          value: |
+            {
+              "admin_password": {
+                "default": "default-password",
+                "test": "password",
+                "prod": "prod-password"
+              },
+              "db_password": {
+                "default": "default-pass",
+                "test": "pass",
+                "prod": "prod-pass"
+              },
+              "third_party_first_id": {
+                "default": "default-some_first_id",
+                "test": "some_first_id",
+                "prod": "prod-some_first_id"
+              },
+              "third_party_first_key":{
+                "default": "default-some_first_key",
+                "test": "some_first_key",
+                "prod": "prod-some_first_key"
+              },
+              "third_party_two_id": {
+                "default": "default-some_two_id",
+                "test": "some_two_id",
+                "prod": "prod-some_two_id"
+              },
+              "third_party_two_key": {
+                "default": "default-some_two_key",
+                "test": "some_two_key",
+                "prod": "prod-some_two_key"
+              }
+            }
+        - key: api
+          value: |
+            {
+              "admin_password": {
+                "default": "default-password",
+                "prod": "prod-password"
+              }
+            }
+        - key: database
+          value: |
+            {
+              "db_password": {
+                "default": "default-pass",
+                "test": "pass",
+                "prod": "prod-pass"
+              }
+            }
+        - key: thirdParty
+          value: |
+            {
+              "third_party_first_id": {
+                "default": "default-some_first_id",
+                "test": "some_first_id",
+                "prod": "prod-some_first_id"
+              },
+              "third_party_first_key":{
+                "default": "default-some_first_key",
+                "test": "some_first_key",
+                "prod": "prod-some_first_key"
+              },
+              "third_party_two_id": {
+                "default": "default-some_two_id",
+                "test": "some_two_id",
+                "prod": "prod-some_two_id"
+              },
+              "third_party_two_key": {
+                "default": "default-some_two_key",
+                "test": "some_two_key",
+                "prod": "prod-some_two_key"
+              }
+            }
+        - key: cluster
+          value: |
+            {
+              "artifactory_service_account": {
+                "default": {
+                  "type": "service_account",
+                  "project_id": "project",
+                  "private_key_id": "05bd2479-74bf-4387-913c-d963466dc4ca",
+                  "private_key": "-----BEGIN PRIVATE KEY-----\nSOME_CERTIFICATE==\n-----END PRIVATE KEY-----\n",
+                  "client_email": "some@mail.com",
+                  "client_id": "118025484569378175420",
+                  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                  "token_uri": "https://oauth2.googleapis.com/token",
+                  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dns01-solver%40project.iam.gserviceaccount.com"
+                },
+                "test": "some_first_id",
+                "prod": "prod-some_first_id"
+              }
+            }
+  conditions:
+    - namespaceSelector:
+        matchLabels:
+          fake-secret/cluster-store: access-cluster-store

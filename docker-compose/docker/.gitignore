@@ -1,0 +1,3 @@
+/registry/config/config.yaml
+/dnsmasq/dnsmasq.conf
+/certificates/*.srl

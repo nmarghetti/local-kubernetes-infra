@@ -1,0 +1,34 @@
+templates:
+  - deployments.yaml
+  - services.yaml
+  - ingress.yaml
+tests:
+  - it: default chart deployment should have no document
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: deployments.yaml
+  - it: the deployment should have 2 deployments and 1 service
+    set:
+      apps.backend.deployment.enabled: true
+      apps.backend.service.enabled: true
+      apps.frontend.deployment.enabled: true
+    values:
+      - values-base.yaml
+    asserts:
+      - hasDocuments:
+          count: 2
+        template: deployments.yaml
+      - hasDocuments:
+          count: 1
+        template: services.yaml
+  - it: chart should match snapshot
+    release:
+      name: mychart
+    chart:
+      version: 0.0.1
+    values:
+      - values-base.yaml
+      - values-enabled.yaml
+    asserts:
+      - matchSnapshot: {}

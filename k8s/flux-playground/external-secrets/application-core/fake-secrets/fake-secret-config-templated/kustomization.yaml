@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: fake-secrets-config-templated
+resources:
+  - namespace.yaml
+  - config.yaml
+  - external-secret.yaml

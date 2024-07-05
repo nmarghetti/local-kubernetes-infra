@@ -1,0 +1,79 @@
+{{- range $appName, $currentApp := .Values.apps }}
+{{- if $currentApp.deployment }}
+{{- if $currentApp.deployment.enabled }}
+{{- $deployment := $currentApp.deployment }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" $ }}-{{ $appName }}
+  annotations:
+    kubectl.kubernetes.io/default-container: app
+    {{- include "chart.deployment.reloader-annotation" ( dict "context" $ "appName" $appName "deployment" $deployment ) | nindent 4}}
+    {{- with $deployment.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  labels:
+    {{- include "chart.labels" $ | nindent 4 }}
+    {{- with $deployment.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ default 1 $deployment.replicas }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $appName }}
+  template:
+    metadata:
+      labels:
+        {{- include "chart.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $appName }}
+    spec:
+      containers:
+        - name: app
+          image: {{ include "chart.deployment.docker-image" ( dict "context" $ "appName" $appName "deployment" $deployment ) }}
+          imagePullPolicy: {{ default "Always" $deployment.image.pullPolicy }}
+          {{- if $deployment.ports }}
+          ports:
+            {{- range $port := $deployment.ports }}
+              {{ $type := (printf "%T" $port) }}
+              {{- if ($type | contains "interface") }}
+            -
+                {{- toYaml $port | nindent 14 }}
+              {{- end }}
+              {{- if or (eq $type "int") ($type | contains "float") }}
+            - containerPort: {{ $port }}
+              {{- end }}
+            {{- end }}
+          {{- end}}
+          {{- include "chart.deployment.env" ( dict "context" $ "appName" $appName "deployment" $deployment ) | nindent 10 }}
+          {{- include "chart.deployment.envFrom" ( dict "context" $ "appName" $appName "deployment" $deployment ) | nindent 10 }}
+
+          {{- with $deployment.container }}
+          {{- range $key, $value := . }}
+          {{- if and (ne $key "env") (ne $key "envFrom") }}
+          {{ $key }}:
+            {{- toYaml $value | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+
+      {{- if $deployment.containers }}
+        {{- toYaml $deployment.containers | nindent 8 }}
+      {{- end }}
+
+
+      {{- if $deployment.volumes }}
+      volumes:
+        {{- $volumes := toYaml $deployment.volumes }}
+        {{- $volumes = regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $volumes (printf "%s-$1" (include "chart.fullname" $) ) }}
+        {{- $volumes | nindent 8 }}
+      {{- end }}
+      {{- if $deployment.affinity }}
+      affinity:
+        {{- toYaml $deployment.affinity | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

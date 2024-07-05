@@ -1,0 +1,24 @@
+Certificate Request:
+    Data:
+        Version: 1 (0x0)
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = portainer, emailAddress = portainer@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:3b:6a:57:1f:84:d9:ed:95:5d:af:6b:8e:9b:d2:
+                    89:ba:20:75:ef:af:00:30:5c:f8:d8:cf:a8:dc:de:
+                    41:e5:db:0e:1d:9a:cd:af:87:69:45:18:d9:0c:34:
+                    30:9d:ed:b5:4a:ff:83:37:0a:09:1c:ef:cb:b9:a3:
+                    a1:0b:b6:bf:42
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        Attributes:
+            (none)
+            Requested Extensions:
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:46:02:21:00:b3:e9:29:88:a6:bd:32:fc:19:f5:9e:c9:17:
+        15:ac:8c:5f:c2:5b:ec:5b:2f:a5:8c:b7:fa:8f:8c:97:a9:5b:
+        cf:02:21:00:c7:bc:66:1f:59:72:d5:f2:81:d3:9e:f5:15:49:
+        27:41:24:19:19:4d:86:9b:fe:80:52:59:37:c0:1f:d5:b9:d2

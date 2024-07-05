@@ -1,0 +1,35 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            18:5f:38:10:2d:3b:5d:17:63:7b:45:20:3a:23:3a:39:3c:d1:7d:76
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = localca, emailAddress = localca@no-reply.com
+        Validity
+            Not Before: Oct  2 16:24:36 2024 GMT
+            Not After : Nov  1 16:24:36 2024 GMT
+        Subject: C = FR, ST = PACA, L = Nice, O = MyCompany, OU = RnD, CN = localca, emailAddress = localca@no-reply.com
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:a8:ce:b1:c1:b8:c9:15:93:92:42:f7:98:e0:2f:
+                    a9:63:bc:53:9f:a5:48:98:34:5a:7d:1c:a6:2d:3f:
+                    53:16:5d:f9:5f:b5:51:2a:3e:ce:31:ab:9a:4a:66:
+                    14:ca:0a:a4:eb:61:fa:fe:db:4a:c3:bc:ff:be:72:
+                    71:80:c3:50:79
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                9D:E1:29:FB:12:98:1D:BC:F4:58:1F:4A:69:90:0E:D8:19:00:BE:E9
+            X509v3 Authority Key Identifier: 
+                9D:E1:29:FB:12:98:1D:BC:F4:58:1F:4A:69:90:0E:D8:19:00:BE:E9
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:45:02:20:37:b5:81:15:0e:ce:b7:66:87:79:b9:a8:3f:57:
+        ac:2d:c7:aa:65:5c:72:00:d5:fe:07:03:cf:42:e6:45:b7:6a:
+        02:21:00:94:d4:8b:3f:ae:03:be:4b:ec:e4:27:5f:7a:5a:28:
+        a5:9a:94:6e:c4:95:21:df:2b:80:41:ad:ed:ee:89:2c:d6

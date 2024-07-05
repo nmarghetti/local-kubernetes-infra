@@ -1,0 +1,16 @@
+templates:
+  - config.yaml
+  - deployments.yaml
+  - external-secrets.yaml
+  - ingress.yaml
+  - services.yaml
+tests:
+  - it: chart should match snapshot
+    release:
+      name: mychart
+    chart:
+      version: 0.0.1
+    values:
+      - ../examples/values-flux-playground_traefik-minikube-vault-helm.yaml
+    asserts:
+      - matchSnapshot: {}

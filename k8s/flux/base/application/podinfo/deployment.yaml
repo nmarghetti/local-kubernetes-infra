@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: podinfo
+  name: podinfo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podinfo
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: podinfo
+    spec:
+      containers:
+        - image: stefanprodan/podinfo
+          name: podinfo
+          ports:
+            - containerPort: 9898
+              name: podinfo
+          env:
+            - name: PODINFO_UI_MESSAGE
+              value: 'Hello from cluster. Check swagger at /swagger/index.html'
+          resources:
+            limits:
+              cpu: '1'
+              memory: '1Gi'
+            requests:
+              cpu: '100m'
+              memory: '100Mi'

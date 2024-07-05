@@ -1,0 +1,24 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: team-foo
+spec:
+  interval: 1m
+  url: ssh://git@host.minikube.internal:222/gitadmin/local_cluster.git
+  secretRef:
+    name: flux-system
+  ref:
+    branch: main
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: team-foo
+spec:
+  serviceAccountName: team-foo
+  interval: 5m
+  path: ./k8s/flux-playground/flux-multi-tenant/team-foo
+  sourceRef:
+    kind: GitRepository
+    name: team-foo
+  prune: true

@@ -1,0 +1,75 @@
+fullnameOverride: ''
+nameOverride: play
+
+dockerRegistry: docker.io
+dockerTag: latest
+
+vault:
+  enabled: false
+  secretRefreshInterval: '12h'
+  environment: test
+
+configs:
+  common:
+    enabled: false
+    annotations: {}
+    labels: {}
+    data: {}
+
+apps:
+  backend:
+    deployment:
+      enabled: false
+      annotations: {}
+      labels: {}
+      replicas: 1
+      image:
+        registry: stefanprodan
+        name: podinfo
+        pullPolicy: IfNotPresent
+      ports: [8080]
+      container: {}
+      volumes: []
+      affinity: {}
+      containers: []
+    service:
+      enabled: false
+      annotations: {}
+      labels: {}
+      type: ClusterIP
+      ports: [8080]
+    ingress:
+      enabled: false
+      annotations: {}
+      labels: {}
+      kind: networking
+      host: play.local
+
+  frontend:
+    deployment:
+      enabled: false
+      annotations: {}
+      labels: {}
+      replicas: 1
+      image:
+        registry: docker.io
+        name: frontend
+        tag: latest
+        pullPolicy: IfNotPresent
+      ports: [8080]
+      container: {}
+      volumes: []
+      affinity: {}
+      containers: []
+    service:
+      enabled: false
+      annotations: {}
+      labels: {}
+      type: ClusterIP
+      port: [8080]
+    ingress:
+      enabled: false
+      annotations: {}
+      labels: {}
+      kind: traefik
+      match: Host(`play.local`)

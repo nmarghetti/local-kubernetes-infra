@@ -1,0 +1,23 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: level2-vault-core
+spec:
+  interval: 20s
+  dependsOn:
+    - name: level1-crds
+  path: './k8s/flux-playground/external-secrets/vault-core'
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  healthChecks:
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: HelmRepository
+      name: external-secrets-io
+      namespace: external-secrets
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: external-secrets
+      namespace: external-secrets

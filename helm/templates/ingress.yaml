@@ -1,0 +1,106 @@
+{{- range $appName, $currentApp := .Values.apps }}
+{{- if $currentApp.deployment }}
+{{- if $currentApp.deployment.enabled }}
+{{- $deployment := $currentApp.deployment }}
+{{- if $currentApp.service }}
+{{- if $currentApp.service.enabled }}
+{{- $service := $currentApp.service }}
+{{- if $currentApp.ingress }}
+{{- if $currentApp.ingress.enabled }}
+{{- $ingress := $currentApp.ingress }}
+
+{{- if default "traefik" $ingress.kind | eq "networking" }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "chart.fullname" $ }}-{{ $appName }}
+  {{- if $ingress.annotations }}
+  annotations:
+    {{- with $ingress.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels:
+    {{- include "chart.labels" $ | nindent 4 }}
+    {{- with $ingress.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if $ingress.ingressClassName }}
+  ingressClassName: {{ $ingress.ingressClassName }}
+  {{- end }}
+  {{- if $ingress.tls }}
+  tls:
+    {{- with $ingress.tls }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- if $ingress.rules }}
+  rules:
+    {{- with $ingress.rules }}
+      {{- toYaml . | replace "${servicename}" (printf "%s-%s" (include "chart.fullname" $) $appName ) | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  rules:
+    - http:
+        paths:
+          - backend:
+              service:
+                name: {{ include "chart.fullname" $ }}-{{ $appName }}
+                port:
+                  number: {{ default 8080 $ingress.port }}
+            path: {{ default "/" $ingress.path }}
+            pathType: {{ default "Prefix" $ingress.pathType }}
+      {{- if $ingress.host }}
+      host: {{ $ingress.host }}
+      {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- if default "traefik" $ingress.kind | eq "traefik" }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "chart.fullname" $ }}-{{ $appName }}
+  annotations:
+    kubernetes.io/ingress.class: {{ default "traefik" $ingress.ingressClassName }}
+    {{- with $ingress.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  labels:
+    {{- include "chart.labels" $ | nindent 4 }}
+    {{- with $ingress.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if $ingress.entryPoints }}
+  entryPoints:
+    {{- with $ingress.entryPoints }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- if $ingress.routes }}
+  routes:
+    {{- with $ingress.routes }}
+      {{- toYaml . | replace "${servicename}" (printf "%s-%s" (include "chart.fullname" $) $appName ) | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  routes:
+    - kind: Rule
+      match: {{ $ingress.match }}
+      services:
+        - kind: Service
+          name: {{ include "chart.fullname" $ }}-{{ $appName }}
+          port: {{ default 8080 $ingress.port }}
+  {{- end }}
+{{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

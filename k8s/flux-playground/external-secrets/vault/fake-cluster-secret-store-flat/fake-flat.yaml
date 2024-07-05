@@ -1,0 +1,54 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: fake-flat
+spec:
+  provider:
+    fake:
+      data:
+        - key: 'test-public-api'
+          value: |
+            {
+              "admin_password": "password",
+              "db_password": "pass",
+              "third_party_first_id": "some_first_id",
+              "third_party_first_key": "some_first_key",
+              "third_party_two_id": "some_two_id",
+              "third_party_two_key": "some_two_key"
+            }
+        - key: 'test-internal-api'
+          value: |
+            {
+              "admin_password": "password"
+            }
+        - key: 'test-web-ui'
+          value: |
+            {
+              "third_party_first_id": "some_first_id",
+              "third_party_first_key": "some_first_key"
+            }
+        - key: 'prod-public-api'
+          value: |
+            {
+              "admin_password": "prod-password",
+              "db_password": "prod-pass",
+              "third_party_first_id": "prod-some_first_id",
+              "third_party_first_key": "prod-some_first_key",
+              "third_party_two_id": "prod-some_two_id",
+              "third_party_two_key": "prod-some_two_key"
+            }
+        - key: 'prod-internal-api'
+          value: |
+            {
+              "admin_password": "prod-password"
+            }
+        - key: 'prod-web-ui'
+          value: |
+            {
+              "third_party_first_id": "prod-some_first_id",
+              "third_party_first_key": "prod-some_first_key"
+            }
+  conditions:
+    - namespaceSelector:
+        matchLabels:
+          fake-secret/cluster-store: access-cluster-store

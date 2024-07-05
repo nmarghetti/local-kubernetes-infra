@@ -1,0 +1,18 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: level3-vault
+spec:
+  interval: 20s
+  dependsOn:
+    - name: level2-vault-core
+  path: './k8s/flux-playground/external-secrets/vault'
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  healthChecks:
+    - apiVersion: external-secrets.io/v1beta1
+      kind: ClusterSecretStore
+      name: fake-config-templated
