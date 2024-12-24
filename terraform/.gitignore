@@ -1,0 +1,5 @@
+/env.*.sh
+!/env.template.sh
+
+/.terraform*
+/terraform.tfstate.d

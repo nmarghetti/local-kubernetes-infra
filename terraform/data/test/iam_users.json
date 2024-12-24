@@ -1,0 +1,9 @@
+{
+  "users": [
+    {
+      "name": "project_SecretManager",
+      "create_iam_access_key": true,
+      "create_iam_user_login_profile": false
+    }
+  ]
+}
