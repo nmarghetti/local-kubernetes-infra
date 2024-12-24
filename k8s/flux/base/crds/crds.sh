@@ -10,7 +10,7 @@ set -eoxu pipefail
 declare -A CRD_VERSION=(
   ["cert-manager"]="v1.14.5"
   ["redis-operator"]="v1.3.0-rc1"
-  ["external-secrets"]="v0.9.13"
+  ["external-secrets"]="v0.11.0"
   ["traefik"]="v31.1.1"
 )
 
@@ -45,3 +45,9 @@ resources:
 $(command ls -1 "$crd" | grep -vFx 'kustomization.yaml' | sed -re 's/^(.*)$/  - \1/')
 EOF
 done
+
+# In case you need to delete some crds before to apply a new version
+delete_crds() {
+  expression="$1"
+  [ -n "$expression" ] && for crd in $(kubectl get crds --no-headers -o custom-columns=NAME:.metadata.name | grep "$expression"); do kubectl delete crd "$crd"; done
+}

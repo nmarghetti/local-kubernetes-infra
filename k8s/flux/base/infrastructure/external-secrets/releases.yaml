@@ -11,7 +11,7 @@ spec:
         name: external-secrets-io
         namespace: flux-system
       # Remember to change the crds version also
-      version: 0.9.13
+      version: 0.11.0
   interval: 5m
   values:
     installCRDs: false

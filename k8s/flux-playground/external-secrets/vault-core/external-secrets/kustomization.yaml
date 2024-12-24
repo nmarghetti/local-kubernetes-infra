@@ -4,3 +4,5 @@ namespace: external-secrets
 resources:
   - ../../../../flux/base/helm-repositories-namespaced/external-secrets-io
   - ../../../../flux/base/infrastructure-namespaced/external-secrets
+patches:
+  - path: releases-patch.yaml

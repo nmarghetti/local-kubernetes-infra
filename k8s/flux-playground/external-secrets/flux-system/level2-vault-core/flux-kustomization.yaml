@@ -13,6 +13,25 @@ spec:
     kind: GitRepository
     name: flux-system
   healthChecks:
+    # replicator
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: HelmRepository
+      name: kubernetes-replicator
+      namespace: replicator
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: replicator
+      namespace: replicator
+    # reloader
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: HelmRepository
+      name: reloader
+      namespace: reloader
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: reloader
+      namespace: reloader
+    # external-secrets
     - apiVersion: source.toolkit.fluxcd.io/v1
       kind: HelmRepository
       name: external-secrets-io

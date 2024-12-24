@@ -1,0 +1,17 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: external-secrets
+spec:
+  values:
+    extraVolumeMounts:
+      - mountPath: /etc/ssl/certs/custom-root.pem
+        subPath: ca-certificates.crt
+        name: certificates
+    extraVolumes:
+      - name: certificates
+        configMap:
+          name: certificates
+          namespace: flux-system
+    deploymentAnnotations:
+      configmap.reloader.stakater.com/reload: 'certificates'
