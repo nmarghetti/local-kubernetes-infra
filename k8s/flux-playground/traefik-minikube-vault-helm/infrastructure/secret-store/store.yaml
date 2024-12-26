@@ -1,3 +1,4 @@
+---
 apiVersion: external-secrets.io/v1beta1
 kind: SecretStore
 metadata:
@@ -15,3 +16,24 @@ spec:
                 }
               }
             }
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: store
+spec:
+  provider:
+    fake:
+      data:
+        - key: cluster
+          value: |
+            {
+              "flux": {
+                "notification": {
+                  "token": "1a3fb2143739a7fc1508381991e6e024b45df58d"
+                }
+              }
+            }
+  conditions:
+    - namespaces:
+        - flux-system

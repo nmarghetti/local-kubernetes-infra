@@ -1,0 +1,44 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: flux-system
+spec:
+  # Switch to true to suspend the automation
+  suspend: false
+  interval: 30m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: fluxcdbot@users.noreply.github.com
+        name: fluxcdbot
+      messageTemplate: |
+        Automated image update
+
+        Automation name: {{ .AutomationObject }}
+
+        Files:
+        {{- range $filename, $_ := .Changed.FileChanges }}
+        - {{ $filename }}
+        {{- end }}
+
+        Objects:
+        {{- range $resource, $changes := .Changed.Objects }}
+        - {{ $resource.Kind }} {{ $resource.Name }}
+          Changes:
+          {{- range $_, $change := $changes }}
+            {{- $image := split ":" $change.Setter }}
+            - {{ $image._1 }}: {{ $change.OldValue }} -> {{ $change.NewValue }}
+          {{- end }}
+        {{- end }}
+
+    push:
+      branch: main
+  update:
+    path: ./k8s/flux-playground/traefik-minikube-vault-helm
+    strategy: Setters

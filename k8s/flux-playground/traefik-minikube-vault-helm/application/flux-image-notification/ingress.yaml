@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  name: flux-image-notification
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`flux-image-notification.traefik.minikube`)
+      services:
+        - kind: Service
+          name: notification-controller
+          port: 80

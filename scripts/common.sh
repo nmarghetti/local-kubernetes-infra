@@ -110,6 +110,7 @@ Options:
     --kind                                : setup kind
     --flux-path <path>                    : select flux path amongs $(find ./k8s/flux-playground -maxdepth 2 -name "flux-system" | tr '\n' ',' | head -c -1)
     --flux-auth <auth>                    : select auth type for flux amongs ssh, token, login (default: ssh)
+    --flux-image-automation               : add flux component for image automation
     --flux-local-helm                     : use local helm registry (default: false)
   -q                                      : quiet mode, print less information
   -h                                      : display this help
@@ -152,6 +153,7 @@ parse_args() {
   use_flux=0
   flux_path=""
   flux_auth="ssh"
+  flux_image_automation=0
   flux_local_helm=0
   use_dnsmasq=0
   minikube_addons=
@@ -198,6 +200,7 @@ parse_args() {
             echo "$flux_auth" | grep -qFx -e ssh -e token -e login || exit_error "Invalid auth type for flux, should be ssh or token"
             OPTIND=$((OPTIND + 1))
             ;;
+          flux-image-automation) flux_image_automation=1 ;;
           flux-local-helm) flux_local_helm=1 ;;
           docker-services)
             docker_services=$(echo "${!OPTIND}" | tr ',' ' ')
@@ -239,6 +242,7 @@ parse_args() {
   export use_flux
   export flux_path
   export flux_auth
+  export flux_image_automation
   export flux_local_helm
   export docker_services
   export use_dkd

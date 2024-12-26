@@ -15,7 +15,7 @@ flux_path="./k8s/flux/base/flux-system/$flux_version"
 [ -f "$flux_path"/gotk-components.yaml ] && exit 0
 
 mkdir -p "$flux_path"
-flux install --export >"$flux_path"/gotk-components.yaml
+flux install --components-extra=image-reflector-controller,image-automation-controller --export >"$flux_path"/gotk-components.yaml
 cat <<-EOM >"$flux_path"/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

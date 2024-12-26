@@ -103,6 +103,7 @@ setup_flux() {
       "--path=$flux_path"
       '--ca-file=./certificates/ca-bundle.crt'
     )
+    [ "$flux_image_automation" -eq 1 ] && bootstrap_params+=('--components-extra=image-reflector-controller,image-automation-controller')
     if [ "$flux_auth" = 'ssh' ]; then
       grep -q "$DOCKER_COMPOSE_HOST" ~/.ssh/known_hosts || ssh-keyscan -p 222 "$DOCKER_COMPOSE_HOST" 2>/dev/null >>~/.ssh/known_hosts
       bootstrap_params+=(

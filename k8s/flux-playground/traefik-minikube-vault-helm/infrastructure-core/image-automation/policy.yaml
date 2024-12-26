@@ -1,0 +1,28 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: flux-automated
+spec:
+  imageRepositoryRef:
+    name: flux-automated
+  filterTags:
+    pattern: '(?P<tag>[0-9-]+\.[0-9]+)'
+    extract: '$tag'
+  policy:
+    alphabetical:
+      order: asc
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: myproject-automated
+spec:
+  imageRepositoryRef:
+    name: myproject-automated
+  filterTags:
+    pattern: '(?P<tag>[\.0-9]+)'
+    extract: '$tag'
+  policy:
+    alphabetical:
+      order: asc

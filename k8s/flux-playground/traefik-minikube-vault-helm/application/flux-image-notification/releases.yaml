@@ -1,0 +1,36 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: flux
+spec:
+  chart:
+    spec:
+      chart: mychart
+      sourceRef:
+        kind: HelmRepository
+        name: mychart
+        namespace: apps
+      version: 1.0.0
+  interval: 5m
+  values:
+    vault:
+      enabled: true
+      secretStoreKind: ClusterSecretStore
+      secretStore: store
+
+    secrets:
+      webhook-token:
+        enabled: true
+        secretName: webhook-token
+        secretConfig:
+          cluster:
+            token: flux.notification.token
+
+    apps:
+      curl:
+        deployment:
+          enabled: true
+          image:
+            registry: curlimages
+          container:
+            command: ['tail', '-f', '/dev/null']

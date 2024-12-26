@@ -38,6 +38,43 @@ spec:
             <p style="text-align: center;">Generated with <a href="https://html6.com/editor/" target="_blank" rel="noopener">https://html6.com/editor/</a></p>
 
     apps:
+      flux-automated:
+        deployment:
+          enabled: true
+          image:
+            registry: host.minikube.internal:5007
+            tag: 2024-12-25-08-00.0 # {"$imagepolicy": "flux-system:flux-automated:tag"}
+          ports: [8080]
+        service:
+          enabled: true
+          ports: [8080]
+        ingress:
+          enabled: true
+          kind: traefik
+          ingressClassName: traefik
+          entryPoints:
+            - web
+          match: Host(`flux-automated.traefik.minikube`)
+          port: 8080
+      myproject-automated:
+        deployment:
+          enabled: true
+          image:
+            registry: host.minikube.internal:5007
+            tag: 1.0.0 # {"$imagepolicy": "flux-system:myproject-automated:tag"}
+          ports: [8080]
+        service:
+          enabled: true
+          ports: [8080]
+        ingress:
+          enabled: true
+          kind: traefik
+          ingressClassName: traefik
+          entryPoints:
+            - web
+          match: Host(`myproject-automated.traefik.minikube`)
+          port: 8080
+
       podinfo:
         deployment:
           enabled: true
