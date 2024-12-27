@@ -7,6 +7,7 @@ dockerTag: latest
 vault:
   enabled: false
   secretRefreshInterval: '12h'
+  secretKeyPrefix: 'external-secrets-project-test-'
   environment: test
 
 configs:
@@ -15,6 +16,12 @@ configs:
     annotations: {}
     labels: {}
     data: {}
+
+secrets:
+  common:
+    enabled: false
+    annotations: {}
+    labels: {}
 
 apps:
   backend:

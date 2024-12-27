@@ -188,6 +188,97 @@ chart should match snapshot:
               ports:
                 - containerPort: 8080
   5: |
+    apiVersion: v1
+    data:
+      annotations: |
+        last-synced: {{ now }}
+      common: |
+        {{ $app := "common" }}
+        {{ $env := "test" }}
+
+        {{ $applicationContext := dict "data" (.application | fromJson) "env" $env "app" $app "entry" "application" }}
+        {{ $clusterContext := dict "data" (.cluster | fromJson) "env" $env "app" $app "entry" "cluster" }}
+
+
+        {{- define "getEnvValue" -}}
+          {{- $data := .context.data }}
+          {{- range $key := (split "." .key) }}
+            {{- if $data }}
+              {{- $data = index $data $key }}
+            {{- end }}
+          {{- end }}
+
+          {{- if $data }}
+            {{- if eq "string" (printf "%T" $data) }}
+              {{- printf "%s" ($data | replace "'" "''") }}
+            {{- else }}
+              {{- if index $data .context.env }}
+                {{- printf "%s" (index $data .context.env | replace "'" "''") }}
+              {{- else }}
+                {{- if index $data "default" }}
+                  {{- printf "%s" (index $data "default" | replace "'" "''") }}
+                {{- else }}
+                  {{- printf "ERROR: [%s][%s] '%s' is not defined neither for '%s' nor default\n" .context.app .context.entry .key .context.env }}
+                  {{- $error := index nil "key is not set for that specific env and has not default value" }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- else }}
+            {{- printf "ERROR: [%s][%s] Unable to find '%s'\n" .context.app .context.entry .key }}
+            {{- $error := index nil "Unable to find the given key" }}
+          {{- end }}
+        {{- end }}
+
+        password: '{{ template "getEnvValue" (dict "context" $applicationContext "key" "db.password") }}'
+
+        access-json:    |
+          {
+            "token": "{{ template "getEnvValue" (dict "context" $clusterContext "key" "sa.token") }}"
+          }
+    kind: ConfigMap
+    metadata:
+      name: mychart-play-common-secretconfig
+  6: |
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: mychart-play-common
+    spec:
+      data:
+        - remoteRef:
+            key: external-secrets-project-test-application
+          secretKey: application
+        - remoteRef:
+            key: external-secrets-project-test-cluster
+          secretKey: cluster
+      refreshInterval: 12h
+      secretStoreRef:
+        kind: ClusterSecretStore
+        name: fake
+      target:
+        name: mychart-play-common
+        template:
+          engineVersion: v2
+          metadata:
+            annotations:
+              reloader.stakater.com/match: "true"
+            labels:
+              chart-app: common
+              chart-secret-source: external-secrets
+          templateFrom:
+            - configMap:
+                items:
+                  - key: common
+                    templateAs: KeysAndValues
+                name: mychart-play-common-secretconfig
+              target: Data
+            - configMap:
+                items:
+                  - key: annotations
+                    templateAs: KeysAndValues
+                name: mychart-play-common-secretconfig
+              target: Annotations
+  7: |
     apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
@@ -214,7 +305,7 @@ chart should match snapshot:
       tls:
         - hosts:
             - play.local
-  6: |
+  8: |
     apiVersion: traefik.io/v1alpha1
     kind: IngressRoute
     metadata:
@@ -237,7 +328,7 @@ chart should match snapshot:
             - kind: Service
               name: mychart-play-frontend
               port: 9000
-  7: |
+  9: |
     apiVersion: v1
     kind: Service
     metadata:
@@ -263,7 +354,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/name: play
       type: ClusterIP
-  8: |
+  10: |
     apiVersion: v1
     kind: Service
     metadata:

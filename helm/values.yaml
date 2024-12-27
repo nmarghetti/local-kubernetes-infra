@@ -13,4 +13,6 @@ vault:
 
 configs: {}
 
+secrets: {}
+
 apps: {}

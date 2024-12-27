@@ -278,21 +278,38 @@ Generate external secrets for a deployment
 */}}
 {{- define "chart.external-secrets.generate" -}}
 {{- if .context.Values.vault.enabled }}
-{{- if .deployment.enabled }}
-{{- if .deployment.vault }}
-{{- if .deployment.vault.secretConfig }}
-  {{- $secretName := printf "%s-%s" (include "chart.fullname" .context) .appName }}
-  {{- $secretRefreshInterval := "1m" }}
-  {{- $secretConfigName := printf "%s-%s-secretconfig" (include "chart.fullname" .context) .appName }}
-  {{- if .deployment.vault.secretName }}
-    {{- $secretName = .deployment.vault.secretName }}
+  {{- $vaultKeysMap := dict }}
+  {{- if .config.secretConfig }}
+    {{- range $key, $value := .config.secretConfig }}
+      {{- $vaultKeysMap = set $vaultKeysMap $key true }}
+    {{- end }}
   {{- end }}
-  {{- if .context.Values.vault.secretRefreshInterval }}
-    {{- $secretRefreshInterval = .context.Values.vault.secretRefreshInterval }}
+  {{- if .config.templateSecretConfig }}
+    {{- $templateContent := toYaml .config.templateSecretConfig }}
+    {{- range $key := regexFindAll "{{@([^:]+):([^}]+)}}" $templateContent -1 }}
+      {{- $key = regexReplaceAll "{{@([^:]+):([^}]+)}}" $key "${1}" }}
+      {{- $vaultKeysMap = set $vaultKeysMap $key true }}
+    {{- end }}
   {{- end }}
-  {{- if .deployment.vault.secretRefreshInterval }}
-    {{- $secretRefreshInterval = .deployment.vault.secretRefreshInterval }}
+
+  {{- $vaultKeys := list }}
+  {{- range $key, $value := $vaultKeysMap }}
+    {{- $vaultKeys = append $vaultKeys $key }}
   {{- end }}
+
+  {{- if ne (len $vaultKeys) 0 }}
+    {{- $secretName := printf "%s-%s" (include "chart.fullname" .context) .appName }}
+    {{- if .config.secretName }}
+      {{- $secretName = .config.secretName }}
+    {{- end }}
+    {{- $secretConfigName := printf "%s-secretconfig" $secretName }}
+    {{- $secretRefreshInterval := "1m" }}
+    {{- if .context.Values.vault.secretRefreshInterval }}
+      {{- $secretRefreshInterval = .context.Values.vault.secretRefreshInterval }}
+    {{- end }}
+    {{- if .config.secretRefreshInterval }}
+      {{- $secretRefreshInterval = .config.secretRefreshInterval }}
+    {{- end }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -307,7 +324,7 @@ data:
     {{ `{{ $env := "` }}{{ .context.Values.vault.environment }}{{ `" }}` }}
     {{ `` }}
 
-    {{- range $key, $value := .deployment.vault.secretConfig }}
+    {{- range $key := $vaultKeys }}
     {{ `{{ $` }}{{ $key }}{{ `Context := dict "data" (.` }}{{ $key }}{{ ` | fromJson) "env" $env "app" $app "entry" "` }}{{ $key }}{{ `" }}` }}
     {{- end }}
 
@@ -342,13 +359,13 @@ data:
     {{- end }}
     ` }}
 
-    {{- range $key, $value := .deployment.vault.secretConfig }}
+    {{- range $key, $value := .config.secretConfig }}
       {{- range $secretKey, $secretValue := $value }}
     {{ $secretKey }}{{ `: '{{ template "getEnvValue" (dict "context" $`}}{{ $key }}{{`Context "key" "` }}{{ $secretValue }}{{ `") }}'` }}
       {{- end }}
     {{ `` }}
     {{- end }}
-    {{- range $secretKey, $secretValue := .deployment.vault.templateSecretConfig }}
+    {{- range $secretKey, $secretValue := .config.templateSecretConfig }}
       {{- $secretValue = regexReplaceAll "{{@([^:]+):([^}]+)}}" $secretValue "{{ template \"getEnvValue\" (dict \"context\" $$${1}Context \"key\" \"${2}\") }}" }}
       {{- if ($secretValue | contains "\n") }}
     {{ $secretKey }}: {{- toYaml $secretValue | indent 4 }}
@@ -391,13 +408,12 @@ spec:
               - key: annotations
                 templateAs: KeysAndValues
   data:
-    {{- range $key, $value := .deployment.vault.secretConfig }}
+    {{- range $key := $vaultKeys }}
     - secretKey: {{ $key }}
       remoteRef:
         key: {{ $.context.Values.vault.secretKeyPrefix }}{{ $key }}
     {{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
+
+  {{- end }}
 {{- end }}
 {{- end }}

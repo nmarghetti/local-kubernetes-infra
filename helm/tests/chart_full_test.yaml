@@ -1,6 +1,7 @@
 templates:
   - config.yaml
   - deployments.yaml
+  - external-secrets.yaml
   - ingress.yaml
   - services.yaml
 tests:

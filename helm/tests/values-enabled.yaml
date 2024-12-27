@@ -2,6 +2,12 @@ configs:
   common:
     enabled: true
 
+secrets:
+  common:
+    enabled: true
+  templated:
+    enabled: true
+
 apps:
   backend:
     deployment:
