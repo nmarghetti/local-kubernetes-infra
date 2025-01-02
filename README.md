@@ -136,3 +136,25 @@ To ensure that it does not only work on my machine, it can be ran inside docker.
 docker logs -f localarch
 ```
 
+## Troubleshooting
+
+1. Minkube
+
+   ```shell
+   # In case minikube takes too long to start, delete it first
+   minikube delete
+   ```
+
+1. 10.255.255.254 address already in use
+
+   ```shell
+   # check you network interfaces
+   ip addr show
+   # delete 10.255.255.254 from lo interface
+   sudo ip addr del 10.255.255.254/32 dev lo
+   ```
+
+1. Certificates errors on websites under WSL
+
+   Add your certificates in you web browser trusted Authorities.
+

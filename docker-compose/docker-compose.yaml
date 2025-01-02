@@ -54,6 +54,22 @@ services:
     depends_on:
       - registry
 
+  curl:
+    container_name: curl
+    image: alpine/curl
+    command: tail -f /dev/null
+
+  dkd:
+    build:
+      context: ../dkd
+      dockerfile: ../dkd/Dockerfile
+    container_name: dkd
+    environment:
+      ALLOW_UNAUTHENTICATED: 'true'
+      LOG_REQUEST: 'true'
+    ports:
+      - "${DKD_PORT:-8100}:8100"
+
   init-gitea:
     build:
       # no_cache: true

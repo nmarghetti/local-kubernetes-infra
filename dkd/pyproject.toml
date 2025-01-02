@@ -1,28 +1,28 @@
+[build-system]
+requires = [ "poetry-core",]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "dkd"
 version = "0.1.0"
 description = ""
-authors = ["noreply <noreply@noreply.com>"]
+authors = [ "author",]
 readme = "README.md"
 
-[tool.poetry.scripts]
-dkd = "dkd.main:app"
-
 [tool.poetry.dependencies]
-python = "^3.9"
-fastapi = "^0.94.1"
-uvicorn = "^0.21.0"
-pyyaml = "^6.0"
-pyjwt = "^2.6.0"
+python = "^3.13"
+fastapi = "^0.115.6"
+uvicorn = "^0.34.0"
+pyyaml = "^6.0.2"
+pyjwt = "^2.10.1"
 passlib = "^1.7.4"
 python-jose = "^3.3.0"
-pytz = "^2022.7.1"
-python-multipart = "^0.0.6"
+pytz = "^2024.2"
+python-multipart = "^0.0.20"
+bcrypt = "^4.2.1"
 
+[tool.poetry.scripts]
+dkd = "dkd.main:main"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[virtualenvs]
-in-project = true
+[tool.poetry.group.dev.dependencies]
+toml = "^0.10.2"

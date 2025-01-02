@@ -1,10 +1,10 @@
-FROM python:3.9
+FROM python:3.13
 
 COPY . /app/
 
 RUN python3 -m pip install --upgrade pip \
   && python3 -m pip install pipx \
-  && pipx install poetry==1.6.1
+  && pipx install poetry==1.8.4
 
 WORKDIR /app
 

@@ -203,7 +203,7 @@ parse_args() {
           flux-image-automation) flux_image_automation=1 ;;
           flux-local-helm) flux_local_helm=1 ;;
           docker-services)
-            docker_services=$(echo "${!OPTIND}" | tr ',' ' ')
+            docker_services="$(echo "${!OPTIND}" | tr ',' ' ')"
             OPTIND=$((OPTIND + 1))
             ;;
           *)

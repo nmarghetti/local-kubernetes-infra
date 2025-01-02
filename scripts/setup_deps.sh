@@ -61,7 +61,7 @@ install_yq() {
 }
 
 install_minikube() {
-  local minkube_version="1.33.1"
+  local minkube_version="1.34.0"
   log_info "Checking minikube $minkube_version"
   if ! type minikube >/dev/null 2>&1 ||
     ! (printf '%s\n%s\n' "$(minikube version -o json | jq -r '.minikubeVersion' | sed -re 's/^v?(.*)$/\1/')" "$minkube_version" | sort -r --check=quiet --version-sort); then

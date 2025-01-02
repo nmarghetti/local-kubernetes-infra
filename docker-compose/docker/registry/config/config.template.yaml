@@ -23,9 +23,17 @@ http:
 notifications:
   endpoints:
     - name: alistener
-      url: http://dkd.minikube/dkd/anonymous/docker-push?token=0IUUSwyB3xOsJxr4i1ixgdrZr4QjJK
+      # url: http://dkd.minikube/dkd/anonymous/docker-push?token=0IUUSwyB3xOsJxr4i1ixgdrZr4QjJK
+      url: http://dkd:8100/dkd/notify-docker-push?token=put-some-token-here
       # headers:
       #   Authorization: [Bearer 0IUUSwyB3xOsJxr4i1ixgdrZr4QjJK]
       timeout: 500ms
       threshold: 5
       backoff: 1s
+    # - name: fluxautomation
+    #   url: http://flux-image-notification.traefik.minikube/hook/a73e235d393ae24401f6339a9dcec1e7e3869da5c1699419734f33636587335c
+    #   # headers:
+    #   #   Authorization: [Bearer 0IUUSwyB3xOsJxr4i1ixgdrZr4QjJK]
+    #   timeout: 500ms
+    #   threshold: 5
+    #   backoff: 1s

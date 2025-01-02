@@ -49,6 +49,23 @@ setup_flux() {
       run_command git push --quiet gitea main
   fi
 
+  # Generate image repositories
+  flux_image_repositories=k8s/flux/base/image-repositories
+  mkdir -p "$flux_image_repositories"
+  for image_repo in "${flux_image_repositories}"/*; do
+    [ ! -d "$image_repo" ] && continue
+    image_name=$(basename "$image_repo")
+    flux_image_repository="$image_repo/repo.yaml"
+    if [ "$use_ssl" -eq 0 ]; then
+      run_command flux create image repository "$image_name" --image="${DOCKER_COMPOSE_HOST}:${REGISTRY_PORT}/${image_name}" --interval=5m --export | yq eval '.spec.insecure = true' >"$flux_image_repository"
+    fi
+  done
+  if ! git diff --exit-code "$flux_image_repositories" >/dev/null; then
+    git add "$flux_image_repositories" &&
+      git commit -m "Update $flux_image_repositories" &&
+      run_command git push --quiet gitea main
+  fi
+
   if [ -z "$flux_path" ] || [ ! -e "$flux_path" ]; then
     log_info "flux_path is not set or does not exist, ignoring flux setup"
     return 0

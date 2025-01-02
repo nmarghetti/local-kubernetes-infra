@@ -16,7 +16,7 @@ setup_minikube() {
   ./certificates/copy_certificates_to_minikube.sh
   cp -f "$CERT_PATH/ca.crt" ~/.minikube/certs/local-ca.crt
 
-  [ "$(minikube status -o json | jq .APIServer | xargs printf "%s")" = "Running" ] || minikube start --embed-certs --insecure-registry=host.minikube.internal:5007 -v=5
+  [ "$(minikube status -o json | jq .APIServer | xargs printf "%s")" = "Running" ] || run_command minikube start --embed-certs --insecure-registry=host.minikube.internal:5007 -v=5
   [ "$(minikube status -o json | jq .APIServer | xargs printf "%s")" = "Running" ] || exit_error "Unable to start local cluster"
   for addon in $minikube_addons; do
     run_command minikube addons enable "$addon"

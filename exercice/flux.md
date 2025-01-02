@@ -19,4 +19,13 @@ kubectl create namespace flux-system
 kubectl apply -f tmp/flux-system-secret.yaml
 kubectl apply -f tmp/flux-system-certificates.yaml
 kubectl apply -k "$flux_path"/flux-system
+
+
+# Image automation
+# suspend the full image automation
+flux suspend image update flux-system
+# suspend only one
+flux suspend image repository podinfo
+# resume
+flux resume image update flux-system
 ```
