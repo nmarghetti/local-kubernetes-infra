@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: level3-application
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '30'
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: cluster
+  source:
+    directory:
+      recurse: true
+    path: k8s/argocd-playground/traefik-minikube-vault-helm/application
+    repoURL: http://gitadmin:v6ccouGZLBogfMn1AzL7@host.local-cluster.internal:3000/gitadmin/local_cluster
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Prune=true

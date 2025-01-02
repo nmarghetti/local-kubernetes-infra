@@ -1,0 +1,98 @@
+---
+# This is the main nginx ingress to redirect everything under *.traefik.minikube to the traefik service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik
+  namespace: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    argocd.argoproj.io/sync-wave: '22'
+spec:
+  ingressClassName: nginx
+  # tls:
+  #   - hosts:
+  #       - traefik.minikube
+  rules:
+    - host: '*.traefik.minikube'
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik
+                port:
+                  number: 8080
+---
+# This is the nginx ingress to redirect the traefik dashboard to the traefik service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-direct-dashboard
+  namespace: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    argocd.argoproj.io/sync-wave: '22'
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: traefik-dashboard.minikube
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik
+                port:
+                  number: 9000
+---
+# This is the traefik ingress route to access the traefik dashboard via http://dashboard.traefik.minikube
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  namespace: traefik
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    argocd.argoproj.io/sync-wave: '22'
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`dashboard.traefik.minikube`)
+      services:
+        - kind: Service
+          name: traefik
+          port: 9000
+---
+# This is the traefik ingress route to access argocd via http://argocd.traefik.minikube
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-dashboard
+  namespace: argocd
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    argocd.argoproj.io/sync-wave: '22'
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`argocd.traefik.minikube`)
+      priority: 10
+      services:
+        - kind: Service
+          name: argocd-server
+          port: 80
+    - kind: Rule
+      match: Host(`argocd.traefik.minikube`) && Header(`Content-Type`, `application/grpc`)
+      priority: 11
+      services:
+        - kind: Service
+          name: argocd-server
+          port: 80
+          scheme: h2c

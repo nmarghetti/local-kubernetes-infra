@@ -132,6 +132,16 @@ install_flux() {
   type flux >/dev/null 2>&1 || exit_error "Unable to install flux"
 }
 
+install_argocd() {
+  log_info "Checking argocd"
+  if ! type argocd >/dev/null 2>&1; then
+    curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+    sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+    rm argocd-linux-amd64
+  fi
+  type argocd >/dev/null 2>&1 || exit_error "Unable to install argocd"
+}
+
 install_mkcert() {
   log_info "Checking mkcert"
   if ! type mkcert >/dev/null 2>&1; then
@@ -151,6 +161,7 @@ setup_deps() {
   install_minikube || exit_error "Unable to install minikube"
   install_kind || exit_error "Unable to install kind"
   install_flux || exit_error "Unable to install flux"
+  install_argocd || exit_error "Unable to install argocd"
 }
 
 # If the script is not being sourced, run the setup

@@ -14,6 +14,11 @@ setup_dnsmasq() {
 
   compute_dnsmasq_access
 
+  # Ensure to remove that broadcast address from the loopback interface
+  if ip addr show lo | grep 10.255.255.254; then
+    sudo ip addr del 10.255.255.254/32 dev lo
+  fi
+
   # Activate and configure dnsmasq if available in the system
   log_info "Ensure to have dnsmasq as first dns resolver"
   if ! grep -qE '^nameserver 127.0.0.1' /etc/resolv.conf; then

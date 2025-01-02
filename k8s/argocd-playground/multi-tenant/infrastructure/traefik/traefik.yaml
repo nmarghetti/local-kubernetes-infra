@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '21'
+spec:
+  destination:
+    namespace: traefik
+    server: https://kubernetes.default.svc
+  project: cluster
+  sources:
+    - ref: values
+      repoURL: http://gitadmin:v6ccouGZLBogfMn1AzL7@host.local-cluster.internal:3000/gitadmin/local_cluster
+      targetRevision: HEAD
+    - chart: traefik
+      helm:
+        valueFiles:
+          - $values/k8s/argocd-playground/multi-tenant/infrastructure/traefik/traefik-values.yaml
+      repoURL: https://traefik.github.io/charts
+      targetRevision: 31.1.1
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

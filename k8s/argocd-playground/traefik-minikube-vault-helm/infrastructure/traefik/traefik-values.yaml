@@ -1,0 +1,43 @@
+# If we want to override traefik image but the helm chart keeps it rather up to date
+# image:
+#   tag:
+instanceLabelOverride: traefik
+log:
+  level: DEBUG
+rollingUpdate:
+  maxUnavailable: 1
+deployment:
+  kind: DaemonSet
+ingressRoute:
+  dashboard:
+    enabled: false
+providers:
+  kubernetesCRD:
+    allowExternalNameServices: true
+additionalArguments:
+  - --entryPoints.websecure.forwardedHeaders.insecure=true
+  # - --entryPoints.websecure.http.middlewares=traefik@kubernetescrd
+  - --serversTransport.insecureSkipVerify=true
+  - --api.insecure=true
+ports:
+  web:
+    port: 8000
+    expose:
+      default: true
+    exposedPort: 80
+    # redirectTo:
+    #   port: websecure
+  websecure:
+    port: 8443
+    expose:
+      default: true
+    exposedPort: 443
+    tls:
+      enabled: true
+  postgres:
+    port: 5432
+service:
+  # The LoadBalancer is created directly by the service.yaml manifest
+  # in order to fix its IP with the field loadBalancerIP, which is not
+  # supported by the Traefik helm chart.
+  enabled: false

@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: foo
+  namespace: argocd
+spec:
+  destination:
+    namespace: foo
+    server: https://kubernetes.default.svc
+  project: foo
+  source:
+    directory:
+      recurse: true
+    path: k8s/argocd-playground/multi-tenant/foo
+    repoURL: http://gitadmin:v6ccouGZLBogfMn1AzL7@host.local-cluster.internal:3000/gitadmin/local_cluster
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

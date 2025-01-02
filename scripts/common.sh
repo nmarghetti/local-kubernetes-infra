@@ -105,13 +105,14 @@ Options:
   -d, --debug                             : debug mode (default)
       --debug-full                        : debug bash
     --minikube                            : setup minikube
+    --kind                                : setup kind
     --docker-services <service[,service]> : select docker services, comma separated, to setup amongs $(yq .services -o json <./docker-compose/docker-compose.yaml | jq -r '[keys[] | select(. | startswith("init-") | not)] | join(",")') (default all)
     --dkd                                 : setup dkd image
-    --kind                                : setup kind
     --flux-path <path>                    : select flux path amongs $(find ./k8s/flux-playground -maxdepth 2 -name "flux-system" | tr '\n' ',' | head -c -1)
     --flux-auth <auth>                    : select auth type for flux amongs ssh, token, login (default: ssh)
     --flux-image-automation               : add flux component for image automation
     --flux-local-helm                     : use local helm registry (default: false)
+    --argocd-path <path>                  : select argocd path amongs $(find ./k8s/argocd-playground -maxdepth 2 -name "argocd" | tr '\n' ',' | head -c -1)
   -q                                      : quiet mode, print less information
   -h                                      : display this help
 
@@ -155,6 +156,8 @@ parse_args() {
   flux_auth="ssh"
   flux_image_automation=0
   flux_local_helm=0
+  use_argocd=0
+  argocd_path=""
   use_dnsmasq=0
   minikube_addons=
   docker_services=portainer
@@ -202,6 +205,11 @@ parse_args() {
             ;;
           flux-image-automation) flux_image_automation=1 ;;
           flux-local-helm) flux_local_helm=1 ;;
+          argocd-path)
+            use_argocd=1
+            argocd_path="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
           docker-services)
             docker_services="$(echo "${!OPTIND}" | tr ',' ' ')"
             OPTIND=$((OPTIND + 1))
@@ -244,6 +252,8 @@ parse_args() {
   export flux_auth
   export flux_image_automation
   export flux_local_helm
+  export use_argocd
+  export argocd_path
   export docker_services
   export use_dkd
   return 0

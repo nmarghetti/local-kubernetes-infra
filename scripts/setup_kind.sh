@@ -4,10 +4,13 @@ compute_kind_access() {
   HOST_IP=$(ip addr show docker0 | awk '/inet / {print $2}' | cut -d/ -f1)
   DOCKER_COMPOSE_HOST=host.kind.internal
   DOCKER_COMPOSE_HOST=$HOST_IP
+  DOCKER_COMPOSE_HOST=host.local-cluster.internal
   CLUSTER_DOMAIN=localhost
+  CLUSTER_CONTEXT=kind-kind
   export HOST_IP
   export DOCKER_COMPOSE_HOST
   export CLUSTER_DOMAIN
+  export CLUSTER_CONTEXT
 }
 
 setup_kind() {
@@ -77,8 +80,20 @@ EOM
   done
   run_command kubectl config use-context "$(kind get kubeconfig | yq '.current-context')" || exit_error "Unable to use kind kube context"
 
-  # Make sure to have host.kind.internal resolving to localhost
+  # Make sure to have $DOCKER_COMPOSE_HOST resolving to localhost
   grep -q "$DOCKER_COMPOSE_HOST" /etc/hosts || sed -r -e "/localhost\$/a 127.0.0.1       $DOCKER_COMPOSE_HOST" /etc/hosts | sudo sponge /etc/hosts
+
+  kubectl get -n kube-system configmaps coredns -o jsonpath='{.data}' | jq -r '.Corefile' >tmp/Corefile
+  if ! grep "$DOCKER_COMPOSE_HOST" tmp/Corefile; then
+    sed -i '/prometheus/a\
+    hosts {\
+      '"$HOST_IP $DOCKER_COMPOSE_HOST"'\
+      fallthrough\
+    }' tmp/Corefile
+    run_command kubectl create configmap coredns -n kube-system --from-file=Corefile=tmp/Corefile --dry-run=client -o yaml | kubectl apply -f -
+    run_command kubectl rollout restart -n kube-system deployment coredns
+    run_command kubectl rollout status -n kube-system deployment coredns
+  fi
 
   log_info "Checking cluser connectivity from kind cluster to with host machine ($HOST_IP)"
   run_command docker exec -it kind-control-plane timeout 2 bash -c "</dev/tcp/${HOST_IP}/${PORTAINER_PORT}" || exit_error "Kind cluster is not able to connect to host"

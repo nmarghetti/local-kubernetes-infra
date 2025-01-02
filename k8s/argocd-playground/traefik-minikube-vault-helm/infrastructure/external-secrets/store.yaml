@@ -1,0 +1,21 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: store
+  namespace: apps
+  annotations:
+    argocd.argoproj.io/sync-wave: '22'
+spec:
+  provider:
+    fake:
+      data:
+        - key: application
+          value: |
+            {
+              "api": {
+                "admin": {
+                  "password": "change-that-password"
+                }
+              }
+            }

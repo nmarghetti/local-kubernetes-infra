@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: whoami
+  name: whoami
+  namespace: bar
+  annotations:
+    argocd.argoproj.io/sync-wave: '40'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whoami
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      containers:
+        - image: containous/whoami
+          name: whoami
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: '1'
+              memory: '1Gi'
+            requests:
+              cpu: '100m'
+              memory: '100Mi'

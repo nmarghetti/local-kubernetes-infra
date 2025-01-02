@@ -1,6 +1,10 @@
 #! /bin/bash
 
 setup_flux() {
+  if [ "$use_minikube" -eq 0 ] && [ "$use_kind" -eq 0 ]; then
+    exit_error "You did not choose if you use minikube or kind (--kind | --minikube)"
+  fi
+
   # Generate helm repositories
   flux_helm_repositories=k8s/flux/base/helm-repositories
   flux_helm_cluster_url=$(echo "$helm_url" | sed -re "s#localhost#${DOCKER_COMPOSE_HOST}#")

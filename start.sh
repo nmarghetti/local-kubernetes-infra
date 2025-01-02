@@ -22,6 +22,8 @@ SCRIPTS=$(git rev-parse --show-toplevel)/scripts
 . "$SCRIPTS"/setup_kind.sh
 # shellcheck source=scripts/setup_flux.sh
 . "$SCRIPTS"/setup_flux.sh
+# shellcheck source=scripts/setup_argocd.sh
+. "$SCRIPTS"/setup_argocd.sh
 # shellcheck source=scripts/setup_dnsmasq.sh
 . "$SCRIPTS"/setup_dnsmasq.sh
 
@@ -43,6 +45,9 @@ run_command setup_docker_compose_services || exit_error "Unable to setup docker 
 }
 [ "$use_flux" -eq 1 ] && {
   run_command setup_flux || exit_error "Unable to setup flux"
+}
+[ "$use_argocd" -eq 1 ] && {
+  run_command setup_argocd || exit_error "Unable to setup argocd"
 }
 [ "$use_dnsmasq" -eq 1 ] && {
   run_command setup_dnsmasq || exit_error "Unable to setup dnsmasq"
