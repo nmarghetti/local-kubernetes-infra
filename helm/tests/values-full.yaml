@@ -39,7 +39,7 @@ apps:
       env:
         key: value
       envFrom:
-        - chartConfigMapRef: common
+        - configMapRef: ${chart[common]}
         - configMapRef: some-config
         - configMapRef: another-config
         - secretRef: some-secret
@@ -49,6 +49,9 @@ apps:
           name: podinfo
         - containerPort: 8080
           name: http
+      startupProbe: /health
+      livenessProbe: /health
+      readinessProbe: /health
       container:
         env:
           - name: env-key
@@ -58,26 +61,22 @@ apps:
               configMapKeyRef:
                 name: some-config
                 key: some.key
+          - name: another-config-key
+            valueFrom:
+              configMapKeyRef:
+                name: ${chart[some-config]}
+                key: another.some.key
         envFrom:
           - configMapRef:
               name: more-config
           - secretRef:
               name: more-secret
+          - secretRef:
+              name: ${chart[another-secret]}
         volumeMounts:
           - name: home
             mountPath: /usr/share/nginx/html/index.html
             subPath: index.html
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-        startupProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 1
-          failureThreshold: 15
-          periodSeconds: 1
         resources:
           requests:
             cpu: 1
@@ -107,6 +106,11 @@ apps:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: ${chart[more-config]}
+            - secretRef:
+                name: ${chart[another-secret]}
           resources:
             requests:
               cpu: 1

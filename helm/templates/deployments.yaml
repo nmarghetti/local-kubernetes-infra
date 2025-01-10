@@ -50,6 +50,43 @@ spec:
           {{- include "chart.deployment.env" ( dict "context" $ "appName" $appName "deployment" $deployment ) | nindent 10 }}
           {{- include "chart.deployment.envFrom" ( dict "context" $ "appName" $appName "deployment" $deployment ) | nindent 10 }}
 
+          {{- if $deployment.startupProbe }}
+          startupProbe:
+            httpGet:
+              path: {{ $deployment.startupProbe }}
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 10
+          {{- end }}
+          {{- if $deployment.livenessProbe }}
+          livenessProbe:
+            httpGet:
+              path: {{ $deployment.livenessProbe }}
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 3
+          {{- end }}
+          {{- if $deployment.readinessProbe }}
+          readinessProbe:
+            httpGet:
+              path: {{ $deployment.readinessProbe }}
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 3
+          {{- end }}
+
           {{- with $deployment.container }}
           {{- range $key, $value := . }}
           {{- if and (ne $key "env") (ne $key "envFrom") }}
@@ -60,7 +97,9 @@ spec:
           {{- end }}
 
       {{- if $deployment.containers }}
-        {{- toYaml $deployment.containers | nindent 8 }}
+        {{- $containers := toYaml $deployment.containers }}
+        {{- $containers = regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $containers (printf "%s-$1" (include "chart.fullname" $) ) }}
+        {{- $containers | nindent 8 }}
       {{- end }}
 
 

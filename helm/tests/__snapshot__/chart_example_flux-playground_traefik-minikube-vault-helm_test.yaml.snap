@@ -22,7 +22,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-home
   2: |
@@ -35,7 +35,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-home
     spec:
@@ -80,7 +80,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-podinfo
     spec:
@@ -117,7 +117,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-whoami
     spec:
@@ -233,7 +233,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-home
     spec:
@@ -259,7 +259,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-podinfo
     spec:
@@ -282,7 +282,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-whoami
     spec:
@@ -310,7 +310,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-home
     spec:
@@ -331,7 +331,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-podinfo
     spec:
@@ -353,7 +353,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mychart
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-whoami
     spec:

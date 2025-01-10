@@ -14,7 +14,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
         someLabel: label
       name: mychart-play-common
@@ -28,7 +28,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-backend
   3: |
@@ -38,15 +38,15 @@ chart should match snapshot:
       annotations:
         annotationKey: annotationValue
         anotherAnnotationKey: anotherAnnotationValue
-        configmap.reloader.stakater.com/reload: mychart-play-backend,some-config,another-config,more-config
+        configmap.reloader.stakater.com/reload: mychart-play-backend,mychart-play-common,some-config,another-config,more-config
         kubectl.kubernetes.io/default-container: app
-        secret.reloader.stakater.com/reload: some-secret,another-secret,more-secret
+        secret.reloader.stakater.com/reload: some-secret,another-secret,more-secret,mychart-play-another-secret
       labels:
         anotherLabelKey: anotherLabelValue
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
         labelKey: labelValue
       name: mychart-play-backend
@@ -84,6 +84,11 @@ chart should match snapshot:
                     configMapKeyRef:
                       key: some.key
                       name: some-config
+                - name: another-config-key
+                  valueFrom:
+                    configMapKeyRef:
+                      key: another.some.key
+                      name: mychart-play-some-config
               envFrom:
                 - configMapRef:
                     name: mychart-play-common
@@ -101,18 +106,36 @@ chart should match snapshot:
                     name: more-config
                 - secretRef:
                     name: more-secret
+                - secretRef:
+                    name: mychart-play-another-secret
               image: stefanprodan/podinfo:latest
               imagePullPolicy: IfNotPresent
               livenessProbe:
+                failureThreshold: 3
                 httpGet:
                   path: /health
-                  port: 8080
+                  port: http
+                  scheme: HTTP
+                initialDelaySeconds: 30
+                periodSeconds: 15
+                successThreshold: 1
+                timeoutSeconds: 15
               name: app
               ports:
                 - containerPort: 9898
                   name: podinfo
                 - containerPort: 8080
                   name: http
+              readinessProbe:
+                failureThreshold: 3
+                httpGet:
+                  path: /health
+                  port: http
+                  scheme: HTTP
+                initialDelaySeconds: 30
+                periodSeconds: 15
+                successThreshold: 1
+                timeoutSeconds: 15
               resources:
                 limits:
                   cpu: 1
@@ -121,17 +144,25 @@ chart should match snapshot:
                   cpu: 1
                   memory: 100Mi
               startupProbe:
-                failureThreshold: 15
+                failureThreshold: 10
                 httpGet:
-                  path: /ready
-                  port: 8080
-                initialDelaySeconds: 1
-                periodSeconds: 1
+                  path: /health
+                  port: http
+                  scheme: HTTP
+                initialDelaySeconds: 60
+                periodSeconds: 15
+                successThreshold: 1
+                timeoutSeconds: 15
               volumeMounts:
                 - mountPath: /usr/share/nginx/html/index.html
                   name: home
                   subPath: index.html
-            - image: docker.io/busybox:latest
+            - envFrom:
+                - configMapRef:
+                    name: mychart-play-more-config
+                - secretRef:
+                    name: mychart-play-another-secret
+              image: docker.io/busybox:latest
               imagePullPolicy: Always
               livenessProbe:
                 httpGet:
@@ -164,7 +195,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-frontend
     spec:
@@ -286,7 +317,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-backend
     spec:
@@ -315,7 +346,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-frontend
     spec:
@@ -337,7 +368,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-backend
     spec:
@@ -363,7 +394,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-frontend
     spec:

@@ -115,7 +115,9 @@ env:
       {{- end }}
     {{- end }}
     {{- if eq $addContainerEnv 1 }}
-      {{- toYaml .deployment.container.env | nindent 2 }}
+      {{- $env := toYaml .deployment.container.env }}
+      {{- $env = regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $env (printf "%s-$1" (include "chart.fullname" $.context) ) }}
+      {{- $env | nindent 2 }}
     {{- end }}
   {{- end }}
 {{- end }}
@@ -158,14 +160,8 @@ envFrom:
     {{- if eq $addEnvFrom 1 }}
       {{- range $item := .deployment.envFrom }}
         {{- range $key, $value := $item }}
-          {{- if ne $key "chartConfigMapRef" }}
   - {{ $key }}:
-      name: {{ $value }}
-          {{- end }}
-          {{- if eq $key "chartConfigMapRef" }}
-  - configMapRef:
-      name: {{ printf "%s-%s" (include "chart.fullname" $.context) $value }}
-          {{- end }}
+      name: {{ regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $value (printf "%s-$1" (include "chart.fullname" $.context) ) }}
         {{- end }}
       {{- end }}
     {{- end }}
@@ -176,7 +172,9 @@ envFrom:
     {{- end }}
     {{/* Add from container.envFrom */}}
     {{- if eq $addContainerEnvFrom 1 }}
-      {{- toYaml .deployment.container.envFrom | nindent 2 }}
+      {{- $envFrom := toYaml .deployment.container.envFrom }}
+      {{- $envFrom = regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $envFrom (printf "%s-$1" (include "chart.fullname" $.context) ) }}
+      {{- $envFrom | nindent 2 }}
     {{- end }}
     {{/* Add from vault */}}
     {{- if eq $addEnvFromVault 1 }}
@@ -204,7 +202,7 @@ Add realoder annotation to deployment
     {{- range $item := .deployment.envFrom }}
       {{- range $key, $value := $item }}
         {{- if eq $key "configMapRef" }}
-          {{- $configs = append $configs $value }}
+          {{- $configs = append $configs (regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $value (printf "%s-$1" (include "chart.fullname" $.context) )) }}
         {{- end }}
       {{- end }}
     {{- end }}
@@ -214,7 +212,7 @@ Add realoder annotation to deployment
       {{- range $item := .deployment.container.envFrom }}
         {{- range $key, $value := $item }}
           {{- if eq $key "configMapRef" }}
-            {{- $configs = append $configs $value.name }}
+            {{- $configs = append $configs (regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $value.name (printf "%s-$1" (include "chart.fullname" $.context) )) }}
           {{- end }}
         {{- end }}
       {{- end }}
@@ -234,7 +232,7 @@ configmap.reloader.stakater.com/reload: {{ $configAnnotation | quote }}
     {{- range $item := .deployment.envFrom }}
       {{- range $key, $value := $item }}
         {{- if eq $key "secretRef" }}
-          {{- $secrets = append $secrets $value }}
+          {{- $secrets = append $secrets (regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $value (printf "%s-$1" (include "chart.fullname" $.context) )) }}
         {{- end }}
       {{- end }}
     {{- end }}
@@ -244,7 +242,7 @@ configmap.reloader.stakater.com/reload: {{ $configAnnotation | quote }}
       {{- range $item := .deployment.container.envFrom }}
         {{- range $key, $value := $item }}
           {{- if eq $key "secretRef" }}
-            {{- $secrets = append $secrets $value.name }}
+            {{- $secrets = append $secrets (regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $value.name (printf "%s-$1" (include "chart.fullname" $.context) )) }}
           {{- end }}
         {{- end }}
       {{- end }}

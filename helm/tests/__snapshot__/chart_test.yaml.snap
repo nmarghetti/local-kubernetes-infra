@@ -9,7 +9,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-backend
     spec:
@@ -42,7 +42,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-frontend
     spec:
@@ -74,7 +74,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-backend
     spec:
@@ -95,7 +95,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-frontend
     spec:
@@ -112,7 +112,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-backend
     spec:
@@ -137,7 +137,7 @@ chart should match snapshot:
         app.kubernetes.io/instance: mychart
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: play
-        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/version: na
         helm.sh/chart: mychart-0.0.1
       name: mychart-play-frontend
     spec:
