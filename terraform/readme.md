@@ -22,8 +22,9 @@ Name-Email: $(git config user.email)
 Expire-Date: 0
 %commit
 EOF
-gpg --batch --generate-key ./tmp/gen-key-script
-rm -f ./tmp/gen-key-script
+  gpg --batch --generate-key ./tmp/gen-key-script
+  rm -f ./tmp/gen-key-script
+fi
 ```
 
 ### Keybase

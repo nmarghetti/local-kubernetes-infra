@@ -54,7 +54,8 @@ setup_dnsmasq() {
     log_command "echo server=/${CLUSTER_DOMAIN}/${HOST_IP} >>docker-compose/docker/dnsmasq/dnsmasq.conf"
     echo "server=/${CLUSTER_DOMAIN}/${HOST_IP}" >>docker-compose/docker/dnsmasq/dnsmasq.conf
   fi
-  local dns_server=$(grep nameserver /etc/resolv.conf | grep -v 127.0.0.1 | head -1 | awk '{ print $2 }')
+  local dns_server
+  dns_server=$(grep nameserver /etc/resolv.conf | grep -v 127.0.0.1 | head -1 | awk '{ print $2 }')
   if grep -qE "^dhcp-option=" docker-compose/docker/dnsmasq/dnsmasq.conf; then
     run_command sed -i -re "s#^dhcp-option=.*\$#dhcp-option=6,$dns_server#" docker-compose/docker/dnsmasq/dnsmasq.conf
   else
@@ -84,6 +85,13 @@ setup_dnsmasq() {
   fi
 
   log_info "Ensure podinfo is deployed"
+  kubectl rollout status -n ingress-nginx deployment ingress-nginx-controller || exit_error "nginx ingress controller is not ready"
+  # Delete info namespace if it exists but there is no ingress for podinfo
+  if kubectl get namespace info &>/dev/null; then
+    if ! kubectl get -n info ingress minikube-podinfo &>/dev/null; then
+      kubectl delete namespace info
+    fi
+  fi
   # shellcheck source=../k8s/podinfo/setup_podinfo.sh
   . "$GIT_ROOT"/k8s/podinfo/setup_podinfo.sh
   install_podinfo_with_kubectl || exit_error "Unable to install podinfo"

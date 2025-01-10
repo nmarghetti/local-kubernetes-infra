@@ -1,7 +1,8 @@
 #! /bin/bash
 
 compute_minikube_access() {
-  HOST_IP=$(minikube ip)
+  # Put default value in case minikube is not running yet
+  HOST_IP=$(minikube ip || echo "192.168.49.2")
   # DOCKER_COMPOSE_HOST=host.minikube.internal
   DOCKER_COMPOSE_HOST=host.local-cluster.internal
   CLUSTER_DOMAIN=minikube
@@ -23,6 +24,11 @@ setup_minikube() {
 
   [ "$(minikube status -o json | jq .APIServer | xargs printf "%s")" = "Running" ] || run_command minikube start --embed-certs --insecure-registry="${DOCKER_COMPOSE_HOST}:${REGISTRY_PORT}" -v=5
   [ "$(minikube status -o json | jq .APIServer | xargs printf "%s")" = "Running" ] || exit_error "Unable to start local cluster"
+
+  # Refresh minikube ip
+  HOST_IP=$(minikube ip)
+  export HOST_IP
+
   for addon in $minikube_addons; do
     run_command minikube addons enable "$addon"
   done
@@ -43,13 +49,13 @@ setup_minikube() {
   fi
 
   log_info "Checking cluser connectivity to $DOCKER_COMPOSE_HOST"
-  run_command ssh-keyscan -t rsa "$(minikube ip)" 2>/dev/null >>~/.ssh/known_hosts
-  if ! ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$(minikube ip)" "cat /etc/hosts" | grep -q "$DOCKER_COMPOSE_HOST"; then
-    local minikube_ip
-    minikube_ip="$(ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$(minikube ip)" "cat /etc/hosts" | grep host.minikube.internal | head -1 | awk '{ print $1 }')"
-    run_command ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$(minikube ip)" "echo '$minikube_ip    $DOCKER_COMPOSE_HOST' | sudo tee -a /etc/hosts >/dev/null"
+  run_command ssh-keyscan -t rsa "$HOST_IP" 2>/dev/null >>~/.ssh/known_hosts
+  if ! ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$HOST_IP" "cat /etc/hosts" | grep -q "$DOCKER_COMPOSE_HOST"; then
+    local minikube_internal_ip
+    minikube_internal_ip="$(ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$HOST_IP" "cat /etc/hosts" | grep host.minikube.internal | head -1 | awk '{ print $1 }')"
+    run_command ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$HOST_IP" "echo '$minikube_internal_ip    $DOCKER_COMPOSE_HOST' | sudo tee -a /etc/hosts >/dev/null"
   fi
-  run_command ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$(minikube ip)" "nc -vz $DOCKER_COMPOSE_HOST $PORTAINER_PORT" || exit_error "Local cluster is not able to connect to host"
+  run_command ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$HOST_IP" "nc -vz $DOCKER_COMPOSE_HOST $PORTAINER_PORT" || exit_error "Local cluster is not able to connect to host"
 }
 
 # If the script is not being sourced, run the setup
