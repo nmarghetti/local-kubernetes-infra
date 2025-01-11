@@ -4,7 +4,7 @@ kind: Kustomization
 metadata:
   name: level4-application
 spec:
-  interval: 20s
+  interval: 10m0s
   dependsOn:
     - name: level3-insfrastructure
   path: './k8s/flux-playground/traefik-minikube-vault-helm/application'
@@ -17,3 +17,15 @@ spec:
       kind: HelmRelease
       name: apps
       namespace: apps
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: flux
+      namespace: flux-system
+    - apiVersion: notification.toolkit.fluxcd.io/v1
+      kind: Receiver
+      name: git
+      namespace: flux-system
+    - apiVersion: notification.toolkit.fluxcd.io/v1
+      kind: Receiver
+      name: apps
+      namespace: flux-system

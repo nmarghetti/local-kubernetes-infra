@@ -42,7 +42,7 @@ spec:
         deployment:
           enabled: true
           image:
-            registry: host.minikube.internal:5007
+            registry: host.local-cluster.internal:5007
             tag: 2024-12-25-08-00.0 # {"$imagepolicy": "flux-system:flux-automated:tag"}
           ports: [8080]
         service:
@@ -60,7 +60,7 @@ spec:
         deployment:
           enabled: true
           image:
-            registry: host.minikube.internal:5007
+            registry: host.local-cluster.internal:5007
             tag: 1.0.0 # {"$imagepolicy": "flux-system:myproject-automated:tag"}
           ports: [8080]
         service:

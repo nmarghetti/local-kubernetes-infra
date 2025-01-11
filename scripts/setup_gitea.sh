@@ -3,12 +3,25 @@
 wait_api_status() {
   local count=${1:-10}
   local interval=${2:-2}
-  local status=${3:-200}
-  shift 3
+  local comparison=${3:-ne}
+  local status=${4:-200}
+  shift 4
+  local match=0
   local result=
   while true; do
     result="$(curl -s -o "$tmp_file_output" -w "%{http_code}" "$@")"
-    if [ "$result" -ne "$status" ] && [ "$count" -gt 0 ]; then
+    if [ "$comparison" = "eq" ]; then
+      [ "$result" -eq "$status" ] && match=1
+    elif [ "$comparison" = "ne" ]; then
+      [ "$result" -ne "$status" ] && match=1
+    elif [ "$comparison" = "le" ]; then
+      [ "$result" -le "$status" ] && match=1
+    elif [ "$comparison" = "ge" ]; then
+      [ "$result" -ge "$status" ] && match=1
+    else
+      exit_error "Unknown comparison $comparison"
+    fi
+    if [ "$match" -ne 1 ] && [ "$count" -gt 0 ]; then
       log_debug "Waiting for ${*: -1} to return status $status (instead of $result)"
       count=$((count - 1))
       sleep "$interval"
@@ -60,6 +73,9 @@ setup_gitea() {
   compute_gitea_access
 
   log_info "Checking gitea"
+  # First ensure that gitea is up and running
+  wait_api_status 5 2 ne 000 "${gitea_curl_args[@]}" "${gitea_api}/user" || exit_error "Unable to reach gitea"
+
   if [ "$(curl -sS -w "%{http_code}" -o /dev/null "${gitea_curl_args[@]}" "${gitea_api}"/user)" -eq 404 ]; then
     if [ "$(curl -s "$gitea_url" | grep -c '<title>Installation - Gitea')" -ne 0 ]; then
       log_step "Initializing gitea and creating admin user"
@@ -102,7 +118,7 @@ setup_gitea() {
         --data admin_confirm_passwd="$gitea_admin_pass"
     fi
   fi
-  wait_api_status 12 10 200 "${gitea_curl_args[@]}" "${gitea_api}/user" || exit_error "Unable to initialize gitea"
+  wait_api_status 12 10 eq 200 "${gitea_curl_args[@]}" "${gitea_api}/user" || exit_error "Unable to initialize gitea"
   if [ "$(curl -sS -w "%{http_code}" -o /dev/null "${gitea_curl_args[@]}" -H 'accept: application/json' "$gitea_api/repos/$gitea_admin/$gitea_repo")" -eq 404 ]; then
     log_step "Creating repository $gitea_repo"
     run_command curl -sS --request POST -o /dev/null "${gitea_curl_args[@]}" --header 'Content-Type: application/json' --url "$gitea_api"/user/repos \
@@ -135,6 +151,36 @@ setup_gitea() {
     }')
     [ "$code" -eq 201 ] || exit_error "$code: Unable to add ssh key ($(cat "$tmp_file_output"))"
   fi
+  # Add webhook
+  if [ "$GITEA_SET_WEBHOOK" -eq 1 ]; then
+    if [ "$(curl -sS "${gitea_curl_args[@]}" -H 'accept: application/json' "$gitea_api/repos/$gitea_admin/$gitea_repo/hooks" | jq '. | length')" -eq 0 ]; then
+      log_step "Adding webhook"
+      code=$(run_command curl -sS --request POST -o "$tmp_file_output" -w "%{http_code}" "${gitea_curl_args[@]}" --header 'Content-Type: application/json' "$gitea_api/repos/$gitea_admin/$gitea_repo/hooks" \
+        --data '{
+        "active": true,
+        "authorization_header": "",
+        "branch_filter": "main",
+        "config": {
+          "content_type": "json",
+          "url": "http://traefik/hook/254ac6f85aab9ac284f9990b5349623be0c3471ff894abc568dc28d3419cd49e"
+        },
+        "events": [
+          "push"
+        ],
+        "type": "gitea"
+      }')
+      [ "$code" -eq 201 ] || exit_error "$code: Unable to add webhook ($(cat "$tmp_file_output"))"
+    fi
+  else
+    if [ "$(curl -sS "${gitea_curl_args[@]}" -H 'accept: application/json' "$gitea_api/repos/$gitea_admin/$gitea_repo/hooks" | jq '. | length')" -ne 0 ]; then
+      local webhook_id
+      webhook_id=$(curl -sS "${gitea_curl_args[@]}" -H 'accept: application/json' "$gitea_api/repos/$gitea_admin/$gitea_repo/hooks" | jq -r '.[0].id')
+      log_step "Removing webhook $webhook_id"
+      code=$(run_command curl -sS --request DELETE -o "$tmp_file_output" -w "%{http_code}" "${gitea_curl_args[@]}" --header 'Content-Type: application/json' --url "$gitea_api/repos/$gitea_admin/$gitea_repo/hooks/$webhook_id")
+      [ "$code" -eq 204 ] || exit_error "$code: Unable to remove webhook ($(cat "$tmp_file_output"))"
+    fi
+  fi
+  # Add token
   if [ "$(curl -sS "${gitea_curl_args[@]}" -H 'accept: application/json' "$gitea_api/users/$gitea_admin/tokens" | jq '. | length')" -eq 0 ]; then
     log_step "Creating token"
     code=$(run_command curl -sS --request POST -o "$tmp_file_output" -w "%{http_code}" "${gitea_curl_args[@]}" --header 'Content-Type: application/json' --url "$gitea_api/users/$gitea_admin/tokens" \

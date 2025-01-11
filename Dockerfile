@@ -50,6 +50,7 @@ RUN ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N "" \
   && git config --global user.email "apprunner@git.com" \
   && git config --global user.name $USER \
   && git init \
+  && echo "/tmp" > .gitignore \
   && git add . \
   && git commit -m "Initial commit"
 

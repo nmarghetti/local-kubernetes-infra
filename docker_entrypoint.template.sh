@@ -1,4 +1,7 @@
-#! /bin/sh
+#! /bin/bash
+
+export PS4=$'+ \t\t''\e[33m\s@\v ${BASH_SOURCE:-}#\e[35m${LINENO} \e[34m${FUNCNAME[0]:+${FUNCNAME[0]}() }''\e[36m\t\e[0m\n'
+[ "$DEBUG_FULL" -eq 1 ] && set -eoxu pipefail
 
 {
   if [ "$(docker info -f json 2>/dev/null | jq .ID | grep -v null | xargs echo | wc -w)" -eq 0 ]; then
@@ -27,6 +30,7 @@ cat <<-EOM >/app/docker-compose/docker-compose.env
 DOCKER_COMPOSE_NAME=$docker_compose_name
 PORTAINER_PORT=${PORTAINER_PORT}
 GITEA_PORT=${GITEA_PORT}
+GITEA_SET_WEBHOOK=${GITEA_SET_WEBHOOK}
 REGISTRY_PORT=${REGISTRY_PORT}
 REGISTRY_UI_PORT=${REGISTRY_UI_PORT}
 HELM_PORT=${HELM_PORT}
@@ -35,6 +39,10 @@ DNSMASQ_UI_PORT=${DNSMASQ_UI_PORT}
 PODINFO_PORT=${PODINFO_PORT}
 WHOAMI_PORT=${WHOAMI_PORT}
 NGINX_PORT=${NGINX_PORT}
+NGINX_INDEX=index-localarch.html
+DKD_PORT=${DKD_PORT}
+TRAEFIK_PORT=${TRAEFIK_PORT}
+TRAEFIK_DASHBOARD_PORT=${TRAEFIK_DASHBOARD_PORT}
 EOM
 
 if ! git diff --quiet docker-compose/docker-compose.env; then
@@ -45,18 +53,26 @@ fi
 if [ -n "$DOCKER_CLEAN_SERVICES" ]; then
   for service in $(echo "$DOCKER_CLEAN_SERVICES" | tr ',' ' '); do
     case "$service" in
-      minikube) : ;;
-      registry | gitea | helm | portainer) service="${docker_compose_name}_${service}" ;;
+      minikube) : volume="$service" ;;
+      registry | gitea | helm | portainer) volume="${docker_compose_name}_${service}" ;;
       *)
         echo "Unknown service $service"
         exit 1
         ;;
     esac
-    sudo docker volume ls -q | grep -qw "$service" && {
+    case "$service" in
+      registry) service='docker-registry' ;;
+      helm) service='helm-registry' ;;
+    esac
+    sudo docker volume ls -q | grep -qFx "$volume" && {
       echo "Removing docker volume $service"
-      sudo docker container stop "$service" >/dev/null
-      sudo docker container rm "$service" >/dev/null
-      sudo docker volume rm "$service" >/dev/null
+      if sudo docker container ls --format '{{.Names}}' | grep -qFx "$service"; then
+        sudo docker container stop "$service" >/dev/null
+      fi
+      if sudo docker container ls --format '{{.Names}}' -a | grep -qFx "$service"; then
+        sudo docker container rm "$service" >/dev/null
+      fi
+      sudo docker volume rm "$volume" >/dev/null
     }
   done
 fi
@@ -100,7 +116,7 @@ scenario_traefik_minikube_vault_helm() {
   printf "\nLets play with flux to orchestrate external-secrets vault, local helm and traefik on minikube...\n"
   sleep 5
   message="Hello from minikube cluster inside the localarch docker container"
-  PODINFO_UI_MESSAGE="$message" ./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,helm,dnsmasq
+  PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
 
   printf "\nChecking how whoami answers...\n"
   if kubectl wait --for=condition=available --timeout=60s deployment/apps-mychart-whoami -n apps; then
@@ -124,10 +140,44 @@ scenario_traefik_minikube_vault_helm() {
   curl -sSf http://podinfo.traefik.minikube
   printf "\n\n"
 
+  printf "\nChecking how flux automated server answers...\n"
+  curl http://flux-automated.traefik.minikube/
+  printf "\n\n"
+
+  printf "\nBuilding new flux automated image...\n"
+  ./docker/docker-build.sh flux-automated 2025-01-01-00-00.7
+  printf "\n\n"
+
+  printf "\nWait for flux to reconcialiate...\n"
+  while read -r line; do
+    # shellcheck disable=SC2086
+    set $line
+    echo "Waiting for $1/$2 to reconcile..."
+    flux reconcile kustomization -n "$1" "$2" --timeout 5m --with-source
+    echo
+  done < <(kubectl get -A kustomizations.kustomize.toolkit.fluxcd.io --no-headers -o custom-columns=NAME:.metadata.namespace,RSRC:.metadata.name)
+
+  printf "\nChecking how flux automated server answers now...\n"
+  curl http://flux-automated.traefik.minikube/
+  printf "\n\n"
+
+  error=0
   if [ "$(curl -sSf http://podinfo.traefik.minikube | jq -r '.message')" = "Hello from cluster. Check swagger at /swagger/index.html. I also have a secret, the api admin password is change-that-password" ]; then
-    echo "Flux on minikube is ready"
+    echo "Podinfo replied as expected"
   else
+    error=1
+  fi
+  if curl -sSf http://flux-automated.traefik.minikube/ | grep -q 'flux-automated version 2025-01-01-00-00.7 is running'; then
+    echo "Flux automated replied as expected"
+  else
+    error=1
+  fi
+  printf "\n\n"
+
+  if [ "$error" -eq 1 ]; then
     echo "An error occured with flux or minikube, please check the logs. You might just need to wait a bit."
+  else
+    echo "Flux on minikube is ready"
   fi
 }
 
@@ -137,8 +187,11 @@ minikube delete
 
 debug_param=
 [ "$DEBUG_FULL" -eq 1 ] && debug_param="--debug-full"
+set +x
 
-if ./start.sh --minikube --docker-services portainer,gitea,helm $debug_param; then
+[ -z "$DOCKER_SERVICES" ] && DOCKER_SERVICES=portainer,gitea,helm
+
+if ./start.sh --minikube --docker-services "$DOCKER_SERVICES" $debug_param; then
   echo "minikube cluster is ready"
   if [ -n "$LOCAL_INFRA_SCENARIO" ]; then
     case "$LOCAL_INFRA_SCENARIO" in
@@ -168,6 +221,7 @@ Here are some usefull commands to interact with the localarch container:
 - check the logs: docker logs -f localarch
 - connect to localarch container: docker exec -it localarch bash
   - run minikube cluster: ./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,helm,dnsmasq --debug-full
+  - run minikube cluster with more complex scenario: PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,traefik,nginx --debug-full
   - run kind cluster (does not work yet): ./start.sh --kind --debug-full
   - check all resource on cluster: kubectl get all -A
   - check all kind of resources on cluster: kubectl api-resources --sort-by name

@@ -62,8 +62,8 @@ setup_helm() {
       mkdir -p ./tmp
       if [ ! -f "./tmp/${helm_chart}-${helm_version}.tgz" ]; then
         if [[ -v helm_charts_repo[$helm_chart] ]]; then
-          helm repo add "$helm_chart" "${helm_charts_repo[$helm_chart]}" >/dev/null
-          helm pull "$helm_chart/${helm_charts_name[$helm_chart]}" --version "$helm_version" -d ./tmp >/dev/null
+          run_command helm repo add "$helm_chart" "${helm_charts_repo[$helm_chart]}" >/dev/null
+          run_command helm pull "$helm_chart/${helm_charts_name[$helm_chart]}" --version "$helm_version" -d ./tmp >/dev/null
         else
           if ! run_command curl -sSL -o "./tmp/${helm_chart}-${helm_version}.tgz" "${helm_charts_url[$helm_chart]}"; then
             rm -f "./tmp/${helm_chart}-${helm_version}.tgz"

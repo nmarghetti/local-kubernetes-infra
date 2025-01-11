@@ -4,7 +4,7 @@ kind: Kustomization
 metadata:
   name: level1-crds
 spec:
-  interval: 20s
+  interval: 10m0s
   dependsOn:
     - name: flux-system
   path: './k8s/flux-playground/traefik-minikube-vault-helm/crds'

@@ -11,6 +11,7 @@ x-common-env: &cenv
   USE_SSL: 1
   USE_INIT_CONTAINER: 1
   DEBUG_INIT_CONTAINER: 1
+  GITEA_SET_WEBHOOK: ${GITEA_SET_WEBHOOK:-0}
 
 x-portainer-env: &portainer-env
   PORTAINER_ADMIN_PASSWORD: ${PORTAINER_ADMIN_PASSWORD:-F0jJ7XWo1TJKyhLQJ62Y}
@@ -56,6 +57,22 @@ services:
     depends_on:
       - registry
 
+  curl:
+    container_name: curl
+    image: alpine/curl
+    command: tail -f /dev/null
+
+  dkd:
+    build:
+      context: ../dkd
+      dockerfile: ../dkd/Dockerfile
+    container_name: dkd
+    environment:
+      ALLOW_UNAUTHENTICATED: 'true'
+      LOG_REQUEST: 'true'
+    ports:
+      - "${DKD_PORT:-8100}:8100"
+
   init-gitea:
     build:
       # no_cache: true
@@ -92,6 +109,7 @@ services:
       # - GITEA__RUN_USER=apprunner
       # - GITEA__RUN_USER=root
       GITEA__server__ROOT_URL: http://localhost:${GITEA_PORT:-3000}/
+      GITEA__webhook__ALLOWED_HOST_LIST: "*"
       DISABLE_REGISTRATION: true
       DB_TYPE: sqlite3
     volumes:
@@ -131,6 +149,8 @@ services:
 
   init-portainer:
     build:
+      # additional_contexts:
+      #   alpine: docker-image://docker.io/library/alpine:latest
       # no_cache: true
       context: ..
       dockerfile: ./docker-compose/docker/Dockerfile.init-container
@@ -227,7 +247,7 @@ services:
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker/traefik/config:/etc/traefik
+      - ./docker/traefik/ssl-config:/etc/traefik
       - ./docker/certificates:/etc/certificates
 
   tool:
@@ -241,4 +261,5 @@ volumes:
   registry:
   helm:
   gitea:
+    driver: local
   portainer:

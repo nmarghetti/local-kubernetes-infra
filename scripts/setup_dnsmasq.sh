@@ -16,7 +16,8 @@ setup_dnsmasq() {
 
   # Ensure to remove that broadcast address from the loopback interface
   if ip addr show lo | grep 10.255.255.254; then
-    sudo ip addr del 10.255.255.254/32 dev lo
+    run_command sudo ip addr del 10.255.255.254/32 dev lo
+    run_command docker container restart dnsmasq
   fi
 
   # Activate and configure dnsmasq if available in the system

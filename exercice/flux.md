@@ -28,4 +28,17 @@ flux suspend image update flux-system
 flux suspend image repository podinfo
 # resume
 flux resume image update flux-system
+
+
+# Wait for all flux kustomization to reconcile
+# leave extra_args empty if it does not need to fetch git repository
+extra_args='--with-source'
+while read -r line; do
+  # shellcheck disable=SC2086
+  set $line
+  echo "Waiting for $1/$2 to reconcile..."
+  flux reconcile kustomization -n "$1" "$2" $extra_args --timeout 5m
+  echo
+done < <(kubectl get -A kustomizations.kustomize.toolkit.fluxcd.io --no-headers -o custom-columns=NAME:.metadata.namespace,RSRC:.metadata.name)
+unset extra_args
 ```

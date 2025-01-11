@@ -9,15 +9,17 @@ usage() {
 Usage: $0 [options]
 
 Options:
-    --debug-full <0|1>          : run the container in full debug mode or not (default: 1)
-    --clean <service[,service]> : remove the docker volume for the specified service(s) amongs minikube,registry,gitea,helm,portainer (default: none)
-    --clean-all                 : remove the entire localarch docker volume and container
-    --scenario <scenario>       : run the specified scenario amongs traefik-minikube, traefik-minikube-vault-helm (default: none)
-    -h, --help                  : display this help
+    --debug-full <0|1>             : run the container in full debug mode or not (default: 1)
+    --services <service[,service]> : run the specified service(s) amongs $(yq .services -o json <./docker-compose/docker-compose.yaml | jq -r '[keys[] | select(. | startswith("init-") | not)] | join(",")') (default: portainer,gitea,helm)
+    --clean <service[,service]>    : remove the docker volume for the specified service(s) amongs minikube,registry,gitea,helm,portainer (default: none)
+    --clean-all                    : remove the entire localarch docker volume and container
+    --scenario <scenario>          : run the specified scenario amongs traefik-minikube, traefik-minikube-vault-helm (default: none)
+    -h, --help                     : display this help
 EOM
 }
 
 clean_all=0
+DOCKER_SERVICES=portainer,gitea,helm
 DOCKER_CLEAN_SERVICES=
 LOCAL_INFRA_SCENARIO=
 DEBUG_FULL=1
@@ -50,6 +52,10 @@ while getopts "h-:" opt; do
           DOCKER_CLEAN_SERVICES="${!OPTIND}"
           OPTIND=$((OPTIND + 1))
           ;;
+        services)
+          DOCKER_SERVICES="${!OPTIND}"
+          OPTIND=$((OPTIND + 1))
+          ;;
         scenario)
           LOCAL_INFRA_SCENARIO="${!OPTIND}"
           OPTIND=$((OPTIND + 1))
@@ -75,8 +81,10 @@ shift $((OPTIND - 1))
   exit 1
 }
 
+export TRAEFIK_PORT=30000
 export PORTAINER_PORT=30001
 export GITEA_PORT=30002
+export GITEA_SET_WEBHOOK=1
 # Do not customize REGISTRY_PORT, it is not supported yet
 # export REGISTRY_PORT=3003
 export REGISTRY_PORT=5007
@@ -89,8 +97,10 @@ export DNSMASQ_UI_PORT=30007
 export PODINFO_PORT=30008
 export WHOAMI_PORT=30009
 export NGINX_PORT=30010
+export DKD_PORT=30011
+export TRAEFIK_DASHBOARD_PORT=30013
 # shellcheck disable=SC2016
-envsubst '${PORTAINER_PORT},${GITEA_PORT},${REGISTRY_PORT},${REGISTRY_UI_PORT},${HELM_PORT},${DNSMASQ_PORT},${DNSMASQ_UI_PORT},${PODINFO_PORT},${WHOAMI_PORT},${NGINX_PORT}' <./docker_entrypoint.template.sh >./docker_entrypoint.sh
+envsubst '${PORTAINER_PORT},${GITEA_PORT},${GITEA_SET_WEBHOOK},${REGISTRY_PORT},${REGISTRY_UI_PORT},${HELM_PORT},${DNSMASQ_PORT},${DNSMASQ_UI_PORT},${PODINFO_PORT},${WHOAMI_PORT},${NGINX_PORT},${DKD_PORT},${TRAEFIK_PORT},${TRAEFIK_DASHBOARD_PORT}' <./docker_entrypoint.template.sh >./docker_entrypoint.sh
 
 # Retrieve system certificates if none are present yet
 find ./certificates -name "*.crt" ! -name "ca-bundle.crt" | wc -l | grep -qwv '0' && [ ! -f ./certificates/ca-bundle.crt ] &&
@@ -108,7 +118,7 @@ docker buildx build -t localarch --output type=docker . &&
   {
     docker container stop localarch >/dev/null 2>&1
     docker container rm localarch >/dev/null 2>&1
-    docker run --privileged --cap-add=ALL -e DEBUG_FULL="$DEBUG_FULL" -e DOCKER_CLEAN_SERVICES="$DOCKER_CLEAN_SERVICES" -e LOCAL_INFRA_SCENARIO="$LOCAL_INFRA_SCENARIO" -e KIND_HTTP_PORT=30080 -e KIND_HTTPS_PORT=30443 -dti --name localarch -v localarch_docker-data:/docker-data \
+    docker run --privileged --cap-add=ALL -e DEBUG_FULL="$DEBUG_FULL" -e DOCKER_SERVICES="$DOCKER_SERVICES" -e DOCKER_CLEAN_SERVICES="$DOCKER_CLEAN_SERVICES" -e LOCAL_INFRA_SCENARIO="$LOCAL_INFRA_SCENARIO" -e KIND_HTTP_PORT=30080 -e KIND_HTTPS_PORT=30443 -dti --name localarch -v localarch_docker-data:/docker-data \
       -p "$PORTAINER_PORT:$PORTAINER_PORT" \
       -p "$GITEA_PORT:$GITEA_PORT" \
       -p "$REGISTRY_UI_PORT:$REGISTRY_UI_PORT" \
@@ -117,11 +127,15 @@ docker buildx build -t localarch --output type=docker . &&
       -p "$PODINFO_PORT:$PODINFO_PORT" \
       -p "$WHOAMI_PORT:$WHOAMI_PORT" \
       -p "$NGINX_PORT:$NGINX_PORT" \
+      -p "$DKD_PORT:$DKD_PORT" \
+      -p "$TRAEFIK_PORT:$TRAEFIK_PORT" \
+      -p "$TRAEFIK_DASHBOARD_PORT:$TRAEFIK_DASHBOARD_PORT" \
       localarch
     # -p "$REGISTRY_PORT:$REGISTRY_PORT" \
     # -p "$HELM_PORT:$HELM_PORT" \
   } && cat <<EOM
-- Portainer: https://localhost:$PORTAINER_PORT
+- Portainer: http://localhost:$PORTAINER_PORT
+- Links (if nginx and traefik are running): http://localhost:$NGINX_PORT
 EOM
 
 # for file in $(docker exec -ti localarch bash -c 'docker exec -ti minikube bash -c "ls -1 /var/lib/minikube/certs/*ca.crt"'); do

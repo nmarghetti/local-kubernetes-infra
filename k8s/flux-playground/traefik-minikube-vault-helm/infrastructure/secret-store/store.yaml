@@ -17,6 +17,7 @@ spec:
               }
             }
 ---
+# To generate a token: head -c 12 /dev/urandom | shasum | cut -d ' ' -f1
 apiVersion: external-secrets.io/v1beta1
 kind: ClusterSecretStore
 metadata:
@@ -30,7 +31,8 @@ spec:
             {
               "flux": {
                 "notification": {
-                  "token": "1a3fb2143739a7fc1508381991e6e024b45df58d"
+                  "docker-token": "1a3fb2143739a7fc1508381991e6e024b45df58d",
+                  "git-token": "79f3525ccb58f876fa7334ea6d767dff8e375042"
                 }
               }
             }

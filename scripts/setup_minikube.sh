@@ -2,7 +2,7 @@
 
 compute_minikube_access() {
   # Put default value in case minikube is not running yet
-  HOST_IP=$(minikube ip || echo "192.168.49.2")
+  HOST_IP=$(minikube ip) || HOST_IP="192.168.49.2"
   # DOCKER_COMPOSE_HOST=host.minikube.internal
   DOCKER_COMPOSE_HOST=host.local-cluster.internal
   CLUSTER_DOMAIN=minikube
@@ -56,6 +56,15 @@ setup_minikube() {
     run_command ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$HOST_IP" "echo '$minikube_internal_ip    $DOCKER_COMPOSE_HOST' | sudo tee -a /etc/hosts >/dev/null"
   fi
   run_command ssh -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -i ~/.minikube/machines/minikube/id_rsa docker@"$HOST_IP" "nc -vz $DOCKER_COMPOSE_HOST $PORTAINER_PORT" || exit_error "Local cluster is not able to connect to host"
+
+  # Connect some services to minikube network
+  for service in traefik dkd; do
+    if [ "$(docker inspect -f '{{.State.Status}}' "$service" 2>/dev/null)" = "running" ]; then
+      if [ ! "$(docker inspect "$service" | jq -r '.[0].NetworkSettings.Networks | to_entries | .[] | select(.key == "minikube").key')" = "minikube" ]; then
+        run_command docker network connect minikube "$service" || exit_error "Unable to connect $service from minikube network"
+      fi
+    fi
+  done
 }
 
 # If the script is not being sourced, run the setup

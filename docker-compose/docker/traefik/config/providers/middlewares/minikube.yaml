@@ -1,0 +1,33 @@
+http:
+  middlewares:
+    # This unfortunately does not work, it can only change the path but not the host
+    minikube-remove-last-subdomain:
+      replacePathRegex:
+        regex: ^(https?://[^/]+\.minikube)\.localhost(.*)$
+        replacement: $${1}$${2}
+
+    minikube-traefik-host:
+      headers:
+        customRequestHeaders:
+          Host: dashboard.traefik.minikube
+          Origin: http://localhost
+    minikube-whoami-host:
+      headers:
+        customRequestHeaders:
+          Host: whoami.traefik.minikube
+          Origin: http://localhost
+    minikube-podinfo-host:
+      headers:
+        customRequestHeaders:
+          Host: podinfo.traefik.minikube
+          Origin: http://localhost
+    minikube-flux-automated-host:
+      headers:
+        customRequestHeaders:
+          Host: flux-automated.traefik.minikube
+          Origin: http://localhost
+    minikube-flux-webhook-host:
+      headers:
+        customRequestHeaders:
+          Host: flux-webhook.traefik.minikube
+          Origin: http://localhost

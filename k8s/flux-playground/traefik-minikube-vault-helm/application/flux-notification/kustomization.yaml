@@ -4,4 +4,3 @@ namespace: flux-system
 resources:
   - releases.yaml
   - notification.yaml
-  - ingress.yaml

@@ -11,6 +11,7 @@ x-common-env: &cenv
   USE_SSL: 0
   USE_INIT_CONTAINER: 1
   DEBUG_INIT_CONTAINER: 1
+  GITEA_SET_WEBHOOK: ${GITEA_SET_WEBHOOK:-0}
 
 x-portainer-env: &portainer-env
   PORTAINER_ADMIN_PASSWORD: ${PORTAINER_ADMIN_PASSWORD:-F0jJ7XWo1TJKyhLQJ62Y}
@@ -33,6 +34,12 @@ services:
     volumes:
       - ./docker/registry/config/config.yaml:/etc/docker/registry/config.yml
       - registry:/var/lib/registry
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.registry.rule=Host(`registry.docker.localhost`)
+      - traefik.http.routers.registry.middlewares=registry-cors
+      - traefik.http.middlewares.registry-cors.headers.customResponseHeaders.access-control-allow-methods=HEAD,GET,OPTIONS,DELETE
+      - traefik.http.middlewares.registry-cors.headers.customResponseHeaders.access-control-allow-origin=*
 
   registry-ui:
     container_name: docker-registry-ui
@@ -41,15 +48,11 @@ services:
       - ${REGISTRY_UI_PORT:-8087}:80
     environment:
       - REGISTRY_TITLE=My local Docker Registry
-      - REGISTRY_URL=http://localhost:${REGISTRY_PORT:-5007}
+      - REGISTRY_URL=${REGISTRY_URL:-http://localhost:${REGISTRY_PORT:-5007}}
       - SINGLE_REGISTRY=true
     labels:
       - traefik.enable=true
-      - traefik.http.routers.registry-ui.rule=Host(`registry.docker.localhost`)
-      # Redirect to locahost due to CORS that allow only localhost
-      - traefik.http.routers.registry-ui.middlewares=redirect-registry-ui
-      - traefik.http.middlewares.redirect-registry-ui.redirectregex.regex=^(https?)://registry.docker.localhost(.*)$
-      - traefik.http.middlewares.redirect-registry-ui.redirectregex.replacement=$${1}://localhost:${REGISTRY_UI_PORT:-8087}$${2}
+      - traefik.http.routers.registry-ui.rule=Host(`registry-ui.docker.localhost`)
 
     depends_on:
       - registry
@@ -106,9 +109,11 @@ services:
       # - GITEA__RUN_USER=apprunner
       # - GITEA__RUN_USER=root
       GITEA__server__ROOT_URL: http://localhost:${GITEA_PORT:-3000}/
+      GITEA__webhook__ALLOWED_HOST_LIST: "*"
       DISABLE_REGISTRATION: true
       DB_TYPE: sqlite3
     labels:
+      - traefik.enable=true
       - traefik.enable=true
       - traefik.http.routers.gitea.rule=Host(`gitea.docker.localhost`)
       - traefik.http.services.gitea.loadbalancer.server.port=3000
@@ -220,7 +225,7 @@ services:
     ports:
       - ${NGINX_PORT:-8081}:80
     volumes:
-      - ./docker/nginx/index.html:/usr/share/nginx/html/index.html
+      - ./docker/nginx/${NGINX_INDEX:-index.html}:/usr/share/nginx/html/index.html
     labels:
       - traefik.enable=true
       - traefik.http.routers.nginx.rule=Host(`localhost`)
@@ -229,24 +234,36 @@ services:
     container_name: traefik
     image: traefik
     command:
+      - --log.level=DEBUG
       - --api.insecure=true
       - --api.dashboard=true
       - --providers.docker
       - --providers.docker.exposedbydefault=false
     ports:
-      - "80:80"
+      - "${TRAEFIK_PORT:-80}:80"
       # The Web UI (enabled by --api.insecure=true)
-      - "8080:8080"
+      - "${TRAEFIK_DASHBOARD_PORT:-8080}:8080"
     labels:
       - traefik.enable=true
       - traefik.log.level=DEBUG
+      # - --providers.file.directory=/etc/traefik/providers
+      # - --providers.file.watch=true
+      # Define the router to access traefik dashboard from http://traefik.docker.localhost
       - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.docker.localhost`)
       - traefik.http.routers.traefik-dashboard.service=api@internal
       - traefik.http.routers.traefik-dashboard.middlewares=myauth
       - traefik.http.middlewares.myauth.basicauth.users=admin:$$apr1$$mgoktys3$$HMzdD2rS7QxXJ1zlgYuis1 # admin: traefik (generated with `htpasswd -bn admin traefik` or `printf "admin:$(openssl passwd -apr1 traefik)\n"`)
+      # Allow to redirect everything under minikube.localhost to minikube cluster
+      # - traefik.http.routers.minikube.rule=Host(`whoami.traefik.minikube.localhost`)
+      # - traefik.http.routers.minikube.service=minikube
+      # - traefik.http.routers.minikube.middlewares=remove-last-subdomain
+      # - traefik.http.services.minikube.loadbalancer.server.url=http://192.168.49.2
+      # - traefik.http.middlewares.remove-last-subdomain.replacePathRegex.regex=^(https?://[^/]+\.minikube)\.localhost(.*)$
+      # - traefik.http.middlewares.remove-last-subdomain.replacePathRegex.replacement=$${1}$${2}
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/traefik/config:/etc/traefik
 
 volumes:
   registry:

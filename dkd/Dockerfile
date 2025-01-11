@@ -1,5 +1,10 @@
 FROM python:3.13
 
+# Install curl and ping
+RUN apt update \
+  && apt install -y curl iputils-ping \
+  && apt clean
+
 COPY . /app/
 
 RUN python3 -m pip install --upgrade pip \

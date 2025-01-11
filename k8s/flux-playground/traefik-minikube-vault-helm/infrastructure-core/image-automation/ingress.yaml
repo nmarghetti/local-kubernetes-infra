@@ -3,14 +3,14 @@ kind: IngressRoute
 metadata:
   annotations:
     kubernetes.io/ingress.class: traefik
-  name: flux-image-notification
+  name: flux-webhook
 spec:
   entryPoints:
     - web
   routes:
     - kind: Rule
-      match: Host(`flux-image-notification.traefik.minikube`)
+      match: Host(`flux-webhook.traefik.minikube`)
       services:
         - kind: Service
-          name: notification-controller
+          name: webhook-receiver
           port: 80

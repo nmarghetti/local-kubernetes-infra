@@ -34,14 +34,14 @@ trap 'rm -f -- $tmp_file_output' INT TERM HUP EXIT
 
 run_command setup_deps || exit_error "Unable to setup dependencies"
 run_command setup_docker_compose_services || exit_error "Unable to setup docker compose services"
-[ "$use_dkd" -eq 1 ] && {
-  run_command setup_dkd || exit_error "Unable to setup dkd"
+[ "$use_kind" -eq 1 ] && {
+  run_command setup_kind || exit_error "Unable to setup kind"
 }
 [ "$use_minikube" -eq 1 ] && {
   run_command setup_minikube || exit_error "Unable to setup minikube"
 }
-[ "$use_kind" -eq 1 ] && {
-  run_command setup_kind || exit_error "Unable to setup kind"
+[ "$use_dkd" -eq 1 ] && {
+  run_command setup_dkd || exit_error "Unable to setup dkd"
 }
 [ "$use_flux" -eq 1 ] && {
   run_command setup_flux || exit_error "Unable to setup flux"

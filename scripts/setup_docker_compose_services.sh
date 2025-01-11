@@ -56,12 +56,47 @@ setup_docker_compose_services() {
     fi
   done
 
+  if [ "$use_minikube" -eq 1 ]; then
+    # Ensure to remove all docker container from minikube network if not right
+    local minikube_network_id=
+    docker network ls --format '{{.Name}}' | grep -qFx 'minikube' && minikube_network_id=$(docker network inspect minikube --format '{{.Id}}')
+    # if minikube network exists but minikube is not up, ensure to remove minikube network and destroy minikube
+    if [ -n "$minikube_network_id" ] && ! minikube ip &>/dev/null; then
+      local container
+      for container in $(docker network inspect minikube | jq -r '.[0].Containers | to_entries | .[].value.Name'); do
+        run_command docker network disconnect minikube "$container" || exit_error "Unable to disconnect $container from minikube network"
+      done
+      run_command docker network rm minikube >/dev/null || exit_error "Unable to remove minikube network"
+      run_command minikube delete
+      minikube_network_id=
+    fi
+    for service in $docker_services; do
+      service=$(yq .services -o json <./docker-compose/"${dockerComposeFile}" | jq -r '. | to_entries[] | select(.key=="'"$service"'") | .value.container_name')
+      # if minikube network exist but the id is different, ensure to disconnect service from it
+      if [ -n "$minikube_network_id" ]; then
+        local service_minikube_network_id=
+        service_minikube_network_id=$(docker inspect "$service" | jq -r '.[0].NetworkSettings.Networks | to_entries | .[] | select(.key == "minikube").value.NetworkID')
+        if [ -n "$service_minikube_network_id" ] && [ ! "$service_minikube_network_id" = "$minikube_network_id" ]; then
+          run_command docker network disconnect "minikube" "$service" || exit_error "Unable to disconnect $service from old minikube network ($service_minikube_network_id)"
+        fi
+      # if minikube network does not exist ensure to disconnect service from it
+      else
+        if docker inspect "$service" &>/dev/null && [ "$(docker inspect "$service" | jq -r '.[0].NetworkSettings.Networks | to_entries | .[] | select(.key == "minikube").key')" = "minikube" ]; then
+          run_command docker network disconnect minikube "$service" || exit_error "Unable to disconnect $service from minikube network"
+        fi
+      fi
+    done
+  fi
+
   # shellcheck disable=SC2016
   envsubst '${REGISTRY_UI_PORT}' <"./docker-compose/docker/registry/config/config.template.yaml" >"./docker-compose/docker/registry/config/config.yaml"
+  if key_in_array traefik "$docker_services" " "; then
+    export REGISTRY_URL="http://registry.docker.localhost:${TRAEFIK_PORT}"
+  fi
   [ ! -f './docker-compose/docker/dnsmasq/dnsmasq.conf' ] && cp './docker-compose/docker/dnsmasq/dnsmasq.template.conf' './docker-compose/docker/dnsmasq/dnsmasq.conf'
 
   if [ "$use_ssl" -eq 1 ] && ! openssl x509 -checkend 86400 -noout -in ./docker-compose/docker/certificates/ca.crt; then
-    log_error "Certifacates have expired, generating new ones with ./docker-compose/generate_certificates.sh"
+    log_error "Certificates have expired, generating new ones with ./docker-compose/generate_certificates.sh"
     ./docker-compose/generate_certificates.sh
     run_command docker compose --env-file docker-compose/docker-compose.env -f ./docker-compose/${dockerComposeFile} stop
   fi

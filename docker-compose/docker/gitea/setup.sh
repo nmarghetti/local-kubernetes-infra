@@ -18,6 +18,7 @@ git init &>/dev/null
 export GITEA_PORT="${GITEA_PORT:-3000}"
 export GITEA_DOCKER_HOST=gitea
 export GITEA_DOCKER_PORT=3000
+export GITEA_SET_WEBHOOK=${GITEA_SET_WEBHOOK:-0}
 
 tmp_file_output=$(mktemp)
 trap 'rm -f -- $tmp_file_output' INT TERM HUP EXIT

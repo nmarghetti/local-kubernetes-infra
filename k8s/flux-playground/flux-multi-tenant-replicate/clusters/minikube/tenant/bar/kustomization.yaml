@@ -21,7 +21,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/url
-        value: ssh://git@host.minikube.internal:222/gitadmin/local_cluster.git
+        value: ssh://git@host.local-cluster.internal:222/gitadmin/local_cluster.git
       - op: replace
         path: /spec/ref/branch
         value: main

@@ -7,7 +7,7 @@ spec:
   values:
     image:
       # In case downloading from internet fails, you can use the following to pull from a local registry
-      # repository: host.minikube.internal:5007/mittwald/kubernetes-replicator
+      # repository: host.local-cluster.internal:5007/mittwald/kubernetes-replicator
       # tag: v2.11.0
     replicationEnabled:
       secrets: true

@@ -19,12 +19,18 @@ spec:
       secretStore: store
 
     secrets:
-      webhook-token:
+      webhook-git-token:
         enabled: true
-        secretName: webhook-token
+        secretName: webhook-git-token
         secretConfig:
           cluster:
-            token: flux.notification.token
+            token: flux.notification.git-token
+      webhook-docker-token:
+        enabled: true
+        secretName: webhook-docker-token
+        secretConfig:
+          cluster:
+            token: flux.notification.docker-token
 
     apps:
       curl:

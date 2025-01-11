@@ -2,9 +2,9 @@
 apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImageRepository
 metadata:
-  name: flux-automated
+  name: myproject-automated
   namespace: flux-system
 spec:
-  image: host.minikube.internal:5007/flux-automated
+  image: host.local-cluster.internal:5007/myproject-automated
   interval: 5m0s
   insecure: true

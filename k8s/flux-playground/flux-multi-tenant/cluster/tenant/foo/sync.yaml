@@ -4,7 +4,7 @@ metadata:
   name: team-foo
 spec:
   interval: 1m
-  url: ssh://git@host.minikube.internal:222/gitadmin/local_cluster.git
+  url: ssh://git@host.local-cluster.internal:222/gitadmin/local_cluster.git
   secretRef:
     name: flux-system
   ref:

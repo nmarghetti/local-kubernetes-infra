@@ -1,6 +1,6 @@
 api:
   dashboard: true
-  insecure: true
+  insecure: false
 providers:
   file:
     directory: '/etc/traefik/providers'
@@ -18,6 +18,6 @@ log:
 # ping: {}
 # metrics:
 #   prometheus: {}
-# serversTransport:
-#   rootCAs:
-#     - /etc/certificates/ca.crt
+serversTransport:
+  rootCAs:
+    - /etc/certificates/ca.crt

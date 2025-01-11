@@ -129,11 +129,16 @@ To ensure that it does not only work on my machine, it can be ran inside docker.
 ```shell
 # Simple scenario with traefik
 ./docker_build.sh --scenario traefik-minikube
+
 # More complex scenario with vault, local helm and traefik
-./docker_build.sh --scenario traefik-minikube-vault-helm
+./docker_build.sh --scenario traefik-minikube-vault-helm --clean registry --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
+# Check http://localhost:30000
 
 # Check the logs of localarch
 docker logs -f localarch
+
+# You can also run nginx and traefik services to access from UI from localarch container
+./start.sh --docker-services nginx,traefik
 ```
 
 ## Troubleshooting
@@ -143,6 +148,7 @@ docker logs -f localarch
    ```shell
    # In case minikube takes too long to start, delete it first
    minikube delete
+   docker network rm minikube
    ```
 
 1. 10.255.255.254 address already in use

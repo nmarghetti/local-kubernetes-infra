@@ -8,6 +8,7 @@
 !/certificates
 !/scripts
 !/start.sh
+!/docker
 !/docker-compose
 !/docker_entrypoint.sh
 !/helm

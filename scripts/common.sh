@@ -108,6 +108,7 @@ Options:
     --kind                                : setup kind
     --docker-services <service[,service]> : select docker services, comma separated, to setup amongs $(yq .services -o json <./docker-compose/docker-compose.yaml | jq -r '[keys[] | select(. | startswith("init-") | not)] | join(",")') (default all)
     --dkd                                 : setup dkd image
+    --gitea-webhook                       : setup gitea webhook to notify flux
     --flux-path <path>                    : select flux path amongs $(find ./k8s/flux-playground -maxdepth 2 -name "flux-system" | tr '\n' ',' | head -c -1)
     --flux-auth <auth>                    : select auth type for flux amongs ssh, token, login (default: ssh)
     --flux-image-automation               : add flux component for image automation
@@ -156,6 +157,7 @@ parse_args() {
   flux_auth="ssh"
   flux_image_automation=0
   flux_local_helm=0
+  GITEA_SET_WEBHOOK=0
   use_argocd=0
   argocd_path=""
   use_dnsmasq=0
@@ -185,6 +187,7 @@ parse_args() {
           minikube) use_minikube=1 ;;
           kind) use_kind=1 ;;
           dkd) use_dkd=1 ;;
+          gitea-webhook) GITEA_SET_WEBHOOK=1 ;;
           minikube-dns)
             use_dnsmasq="${!OPTIND}"
             OPTIND=$((OPTIND + 1))
@@ -256,5 +259,6 @@ parse_args() {
   export argocd_path
   export docker_services
   export use_dkd
+  export GITEA_SET_WEBHOOK
   return 0
 }

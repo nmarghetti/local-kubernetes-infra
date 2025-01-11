@@ -6,4 +6,4 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m0s
-  url: http://host.minikube.internal:8088/
+  url: http://host.local-cluster.internal:8088/

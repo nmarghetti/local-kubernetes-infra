@@ -6,3 +6,4 @@ resources:
   - ../../../../flux/base/image-repositories/myproject-automated
   - policy.yaml
   - update.yaml
+  - ingress.yaml

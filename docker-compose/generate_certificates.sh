@@ -35,8 +35,8 @@ echo
 
 declare -A servers=(
   ['portainer']='{"CN": "portainer", "hosts": ["portainer", "localhost", "portainer.docker.localhost"]}'
-  ['helm']='{"CN": "helm", "hosts": ["helm", "helm.docker.localhost", "host.minikube.internal", "host.kind.internal", "localhost"], "client": true}'
-  ['registry']='{"CN": "registry", "hosts": ["registry", "host.minikube.internal", "host.kind.internal", "localhost"], "client": true}'
+  ['helm']='{"CN": "helm", "hosts": ["helm", "helm.docker.localhost", "host.local-cluster.internal", "host.minikube.internal", "host.kind.internal", "localhost"], "client": true}'
+  ['registry']='{"CN": "registry", "hosts": ["registry", "host.local-cluster.internal", "host.minikube.internal", "host.kind.internal", "localhost"], "client": true}'
   ['traefik']='{"CN": "traefik", "hosts": ["traefik", "traefik.docker.localhost"]}'
   ['tools']='{"CN": "local tools", "hosts": ["whoami", "whoami.docker.localhost"]}'
 )
