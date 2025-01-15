@@ -1,0 +1,47 @@
+# !!!! READ THIS BEFORE USING IF STATEMENT https://agentzh.blogspot.com/2011/03/how-nginx-location-if-works.html
+
+error_log /var/log/nginx/error.log ${NGINX_LOG_LEVEL};
+
+# Automatically use proper SSL configuration
+server {
+  listen       80;
+  listen  [::]:80;
+  server_name nginx-k8s.localhost;
+  large_client_header_buffers 4 32k;
+
+  # proxy everything to the k8s cluster
+  location ~ .+ {
+    proxy_pass https://192.168.49.2:8443;
+
+    # Define client certificate and key
+    proxy_ssl_certificate /etc/nginx/certs/minikube_client.crt;
+    proxy_ssl_certificate_key /etc/nginx/certs/minikube_client.key;
+
+    # Optional: Define the CA certificate to verify the upstream server
+    proxy_ssl_trusted_certificate /etc/nginx/certs/minikube_ca.crt;
+
+  }
+}
+
+# server {
+#   listen       443;
+#   listen  [::]:443;
+#   server_name k8s.localhost;
+#   large_client_header_buffers 4 32k;
+
+#   # proxy everything to the k8s cluster
+#   location ~ .+ {
+#     proxy_pass https://192.168.49.2:8443;
+
+#     # Enable SSL verification of the upstream server
+#     # proxy_ssl_verify on;
+#     # proxy_ssl_verify_depth 2;
+
+#     # Define client certificate and key
+#     proxy_ssl_certificate /etc/nginx/certs/client.crt;
+#     proxy_ssl_certificate_key /etc/nginx/certs/client.key;
+
+#     # Optional: Define the CA certificate to verify the upstream server
+#     proxy_ssl_trusted_certificate /etc/nginx/certs/ca.crt;
+#   }
+# }

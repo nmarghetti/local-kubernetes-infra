@@ -6,7 +6,6 @@ Lets setup a git server, add a repository and push in it.
 # this will fail
 docker run -it --rm -p 9093:3000 -p 9094:22 gitea/gitea gitea
 
-mkdir -p tmp/gitea
 docker run -u git -e DB_TYPE=sqlite3 -it --rm -p 9093:3000 -p 9094:22 -v ./tmp/gitea:/data gitea/gitea gitea
 ```
 

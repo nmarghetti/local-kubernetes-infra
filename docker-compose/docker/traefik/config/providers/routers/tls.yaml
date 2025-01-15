@@ -1,0 +1,5 @@
+# Certificates when using websecure endpoint
+tls:
+  certificates:
+    - certFile: /etc/traefik/certs/traefik-server.crt
+      keyFile: /etc/traefik/certs/traefik-server.key

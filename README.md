@@ -87,7 +87,8 @@
       ./start.sh --minikube --minikube-addons ingress,ingress-dns --minikube-dns 1
 
       # Retrieve minikube cluster config to add it to lens
-      cat ~/.kube/config | yq -o json | jq '.clusters |= [(.[] | select(.name == "minikube"))] | .contexts |= [(.[] | select(.name == "minikube"))] | .users |= [(.[] | select(.name == "minikube"))]' > ~/.kube/minikube.config
+      # cat ~/.kube/config | yq -o json | jq '.clusters |= [(.[] | select(.name == "minikube"))] | .contexts |= [(.[] | select(.name == "minikube"))] | .users |= [(.[] | select(.name == "minikube"))]' > ~/.kube/minikube.config
+      kubectl config view --minify --raw > ~/.kube/minikube.config
       # Retrieve path to config and add it to Lens
       wslpath -w ~/.kube/minikube.config
 
@@ -127,6 +128,9 @@
 To ensure that it does not only work on my machine, it can be ran inside docker. So far it works with minikube but not kind.
 
 ```shell
+# Deploy the minikube cluster with dashboard and few services
+./docker_build.sh --minikube-dashboard --services nginx,traefik
+
 # Simple scenario with traefik
 ./docker_build.sh --scenario traefik-minikube
 
@@ -137,13 +141,35 @@ To ensure that it does not only work on my machine, it can be ran inside docker.
 # Check the logs of localarch
 docker logs -f localarch
 
-# You can also run nginx and traefik services to access from UI from localarch container
-./start.sh --docker-services nginx,traefik
+# Check minikube kubernetes server replies
+docker exec -ti localarch curl -k https://127.0.0.1:32771/version
+# Check minikube kubernetes server access from traefik
+curl -H 'Host: k8s.localhost' https://localhost:30000/version
 ```
+
+## Access minikube cluster from Lens
+
+1. minikube cluster
+
+   ```shell
+   # start minikube with nginx and traefik services
+   ./start.sh --minikube --docker-services nginx,traefik
+   ```
+
+   You can add a cluster to Lens with content of [minikube_kubeconfig.yaml](tmp/minikube_kubeconfig.yaml).
+
+1. minikube cluster inside localarch docker container
+
+   ```shell
+   # build localarch with nginx and traefik services
+   ./docker_build.sh --minikube-dashboard --services nginx,traefik
+   ```
+
+   You can add a cluster to Lens with content of [minikube_localarch_kubeconfig.yaml](tmp/minikube_localarch_kubeconfig.yaml).
 
 ## Troubleshooting
 
-1. Minkube
+1. Minikube
 
    ```shell
    # In case minikube takes too long to start, delete it first

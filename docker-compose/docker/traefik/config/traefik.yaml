@@ -21,3 +21,5 @@ log:
 # serversTransport:
 #   rootCAs:
 #     - /etc/certificates/ca.crt
+serversTransport:
+  insecureSkipVerify: true

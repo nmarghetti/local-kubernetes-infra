@@ -43,6 +43,7 @@ NGINX_INDEX=index-localarch.html
 DKD_PORT=${DKD_PORT}
 TRAEFIK_PORT=${TRAEFIK_PORT}
 TRAEFIK_DASHBOARD_PORT=${TRAEFIK_DASHBOARD_PORT}
+MINIKUBE_DASHBOARD_PORT=${MINIKUBE_DASHBOARD_PORT}
 EOM
 
 if ! git diff --quiet docker-compose/docker-compose.env; then
@@ -81,7 +82,7 @@ scenario_traefik_minikube() {
   printf "\nLets play with flux and traefik on minikube...\n"
   sleep 5
   message="Hello from minikube cluster inside the localarch docker container"
-  PODINFO_UI_MESSAGE="$message" ./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,dnsmasq
+  PODINFO_UI_MESSAGE="$message" ./start.sh --minikube $minikube_dashboard_param --flux-path k8s/flux-playground/traefik-minikube --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,dnsmasq
 
   printf "\nChecking how whoami answers...\n"
   if kubectl wait --for=condition=available --timeout=60s deployment/whoami -n playground-traefik-minikube; then
@@ -116,7 +117,7 @@ scenario_traefik_minikube_vault_helm() {
   printf "\nLets play with flux to orchestrate external-secrets vault, local helm and traefik on minikube...\n"
   sleep 5
   message="Hello from minikube cluster inside the localarch docker container"
-  PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
+  PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube $minikube_dashboard_param --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
 
   printf "\nChecking how whoami answers...\n"
   if kubectl wait --for=condition=available --timeout=60s deployment/apps-mychart-whoami -n apps; then
@@ -189,10 +190,18 @@ debug_param=
 [ "$DEBUG_FULL" -eq 1 ] && debug_param="--debug-full"
 set +x
 
+minikube_dashboard_param=
+[ "$START_MINIKUBE_DASHBOARD" -eq 1 ] && minikube_dashboard_param="--minikube-dashboard"
+
 [ -z "$DOCKER_SERVICES" ] && DOCKER_SERVICES=portainer,gitea,helm
 
-if ./start.sh --minikube --docker-services "$DOCKER_SERVICES" $debug_param; then
+if ./start.sh --minikube $minikube_dashboard_param --docker-services "$DOCKER_SERVICES" $debug_param; then
   echo "minikube cluster is ready"
+
+  # Expose the kubernetes api server
+  kubectl --context minikube proxy --port 8443 --address=0.0.0.0 &
+
+  # Run the scenario if provided
   if [ -n "$LOCAL_INFRA_SCENARIO" ]; then
     case "$LOCAL_INFRA_SCENARIO" in
       traefik-minikube) scenario_traefik_minikube ;;

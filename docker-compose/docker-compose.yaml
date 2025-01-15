@@ -222,10 +222,19 @@ services:
   nginx:
     container_name: nginx
     image: nginx
+    entrypoint: '/start-nginx.sh'
+    command: [nginx-debug, '-g', 'daemon off;']
+    environment:
+      NGINX_LOG_LEVEL: ${NGINX_LOG_LEVEL:-info}
     ports:
       - ${NGINX_PORT:-8081}:80
     volumes:
-      - ./docker/nginx/${NGINX_INDEX:-index.html}:/usr/share/nginx/html/index.html
+      - ./docker/nginx/html/${NGINX_INDEX:-index.html}:/usr/share/nginx/html/index.html
+      - ./docker/nginx/start-nginx.sh:/start-nginx.sh
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/nginx/templates:/etc/nginx/templates
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/certs:/etc/nginx/certs
     labels:
       - traefik.enable=true
       - traefik.http.routers.nginx.rule=Host(`localhost`)
@@ -264,6 +273,7 @@ services:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
       - ./docker/traefik/config:/etc/traefik
+      - ./docker/traefik/config/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
 
 volumes:
   registry:

@@ -126,7 +126,6 @@ case "$cluster" in
     ;;
 esac
 
-mkdir -p tmp
 # file=$(mktemp)
 # tmp_file=$(mktemp)
 # tmp_templ_file=$(mktemp)

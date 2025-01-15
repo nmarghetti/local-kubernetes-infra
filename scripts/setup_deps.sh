@@ -10,6 +10,7 @@ install_deps() {
   done
   ! type "envsubst" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install gettext"
   ! type "netcat" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install netcat-openbsd"
+  ! type "netstat" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install net-tools"
   ! type "ip" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install iproute2"
   ! type "sponge" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install moreutils"
   ! type "htpasswd" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install apache2-utils"
@@ -20,7 +21,7 @@ install_deps() {
     # shellcheck disable=SC2086
     sudo apt-get update && sudo apt-get install -y $dependencies_to_install
   }
-  for dep in $dependencies envsubst netcat ip sponge htpasswd nslookup; do
+  for dep in $dependencies envsubst netcat netstat ip sponge htpasswd nslookup; do
     ! type "$dep" >/dev/null 2>&1 && echo "'$dep' is not available" && return 1
   done
 

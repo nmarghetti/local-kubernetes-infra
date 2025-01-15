@@ -14,6 +14,7 @@ http:
       service: minikube
       middlewares:
         - minikube-remove-last-subdomain
+
     # So we need to create a middleware for each host
     minikube-traefik:
       entryPoints:

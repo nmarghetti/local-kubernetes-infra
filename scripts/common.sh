@@ -105,6 +105,7 @@ Options:
   -d, --debug                             : debug mode (default)
       --debug-full                        : debug bash
     --minikube                            : setup minikube
+    --minikube-dashboard                  : start minikube dashboard
     --kind                                : setup kind
     --docker-services <service[,service]> : select docker services, comma separated, to setup amongs $(yq .services -o json <./docker-compose/docker-compose.yaml | jq -r '[keys[] | select(. | startswith("init-") | not)] | join(",")') (default all)
     --dkd                                 : setup dkd image
@@ -150,6 +151,7 @@ wait_server_up() {
 parse_args() {
   use_ssl=0
   use_minikube=0
+  start_minikube_dashboard=0
   use_kind=0
   use_dkd=0
   use_flux=0
@@ -185,6 +187,7 @@ parse_args() {
           no-ssl) use_ssl=0 ;;
           use-ssl) use_ssl=1 ;;
           minikube) use_minikube=1 ;;
+          minikube-dashboard) start_minikube_dashboard=1 ;;
           kind) use_kind=1 ;;
           dkd) use_dkd=1 ;;
           gitea-webhook) GITEA_SET_WEBHOOK=1 ;;
@@ -247,6 +250,7 @@ parse_args() {
   [ $use_minikube -eq 0 ] && use_dnsmasq=0
   export use_ssl
   export use_minikube
+  export start_minikube_dashboard
   export minikube_addons
   export use_kind
   export use_dnsmasq

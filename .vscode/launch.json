@@ -27,6 +27,13 @@
       "program": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/aws-secret-handler",
       "request": "launch",
       "args": ["--region", "eu-west-1", "--project", "project", "diff", "--secrets", "cluster"]
+    },
+    {
+      "type": "bashdb",
+      "request": "launch",
+      "name": "Bash-Debug current file",
+      "program": "${file}",
+      "args": []
     }
   ]
 }

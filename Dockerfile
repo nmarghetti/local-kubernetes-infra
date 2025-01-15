@@ -49,10 +49,12 @@ RUN ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N "" \
   && git config --global init.defaultBranch main \
   && git config --global user.email "apprunner@git.com" \
   && git config --global user.name $USER \
+  && rm -f /app/certificates/.gitignore \
   && git init \
-  && echo "/tmp" > .gitignore \
   && git add . \
-  && git commit -m "Initial commit"
+  && git commit -m "Initial commit" \
+  && git ls-files --directory --no-empty-directory -o | xargs -r rm -rf \
+  && curl -sSf https://gist.githubusercontent.com/nmarghetti/1ce01f705a8baa71b733ec6ff090d686/raw/fde0fdc23853ff0c6dedabde4880b152d0fd00ed/.gitconfig >> /home/$USER/.gitconfig
 
 # Add certificates to minikube
 RUN mkdir -p /home/$USER/.minikube/certs \

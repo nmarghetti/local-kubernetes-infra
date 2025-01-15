@@ -1,7 +1,9 @@
 # Ignore all
 **
 
-# Fore dev container
+!.gitgnore
+
+# For dev container
 !/.devcontainer/shellrc.sh
 
 
@@ -14,3 +16,4 @@
 !/helm
 !/k8s
 !/dkd
+!/tmp/.gitkeep

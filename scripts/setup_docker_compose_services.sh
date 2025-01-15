@@ -102,10 +102,20 @@ setup_docker_compose_services() {
   fi
 
   # If traefik services is asked, ensure that kind is not already up and running (taking already port 80)
+  # Also generate certificates
   if key_in_array traefik "$docker_services" " "; then
     if [ "$(docker inspect -f '{{.State.Status}}' kind-control-plane 2>/dev/null)" = "running" ]; then
       exit_error "Kind cluster is running, please stop it before being able to start traefik service as both are using port 80"
     fi
+    if [ ! -f ./docker-compose/docker/traefik/config/certs/ca-certificates.crt ]; then
+      ./docker-compose/docker/traefik/config/certs/generate.sh
+    fi
+  fi
+
+  # If nginx services is asked, ensure to have some minikube certificates generated if not there yet
+  if key_in_array traefik "$docker_services" " " && [ ! -f ./docker-compose/docker/nginx/certs/minikube_ca.crt ]; then
+    CAROOT=./docker-compose/docker/nginx/certs mkcert -key-file "./docker-compose/docker/nginx/certs/minikube_client.key" -cert-file "./docker-compose/docker/nginx/certs/minikube_client.crt" "localhost"
+    cp -f ./docker-compose/docker/nginx/certs/rootCA.pem ./docker-compose/docker/nginx/certs/minikube_ca.crt
   fi
 
   # shellcheck disable=SC2086
