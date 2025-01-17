@@ -128,8 +128,11 @@
 To ensure that it does not only work on my machine, it can be ran inside docker. So far it works with minikube but not kind.
 
 ```shell
+# To debug the docker build
+DOCKER_BUILDKIT=0 ./docker_build.sh 2>&1 | tee ./tmp/docker_output.log
+
 # Deploy the minikube cluster with dashboard and few services
-./docker_build.sh --minikube-dashboard --services nginx,traefik
+./docker_build.sh --minikube-dashboard --services nginx,traefik --debug-full 0
 
 # Simple scenario with traefik
 ./docker_build.sh --scenario traefik-minikube
@@ -162,7 +165,7 @@ curl -H 'Host: k8s.localhost' https://localhost:30000/version
 
    ```shell
    # build localarch with nginx and traefik services
-   ./docker_build.sh --minikube-dashboard --services nginx,traefik
+   ./docker_build.sh --services nginx,traefik
    ```
 
    You can add a cluster to Lens with content of [minikube_localarch_kubeconfig.yaml](tmp/minikube_localarch_kubeconfig.yaml).

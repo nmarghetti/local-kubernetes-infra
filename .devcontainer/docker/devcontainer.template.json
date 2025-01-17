@@ -3,10 +3,14 @@
 // https://containers.dev/features
 {
   "name": "[Docker] Local docker/k8s architecture",
+  // It is needed to mount the project with the same path, otherwise the docker-compose will not work
+  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
+  "workspaceFolder": "${localWorkspaceFolder}",
   // "mounts": ["source=${localEnv:HOME}${localEnv:USERPROFILE}/.Xauthority,target=/data/.Xauthority,type=bind,consistency=cached"],
   "mounts": [
     "source=bashhistory,target=/commandhistory,type=volume",
-    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    // "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    "source=${localEnv:HOME}/.ssh,target=${localEnv:HOME}/.ssh,type=bind,consistency=cached"
     "source=${localEnv:HOME}/.kube,target=${localEnv:HOME}/.kube,type=bind,consistency=cached"
   ],
   "postCreateCommand": {
@@ -14,22 +18,27 @@
     "welcome": "echo 'Welcome to dev container world !!!'"
   },
   "remoteEnv": {
-    "XSERVER_DISPLAY": "${localEnv:DISPLAY}"
+    "XSERVER_DISPLAY": "${localEnv:DISPLAY}",
+    "DOCKER_COMPOSE_NAME": "devcontainer-services"
   },
   "build": {
     "dockerfile": "Dockerfile.docker-amd64",
     "context": "../..",
     "args": {
       "USERNAME": "${localEnv:USER}",
-      "INSTALL_DOCKER": "1",
-      "DOCKER_GID": "${DOCKER_GID}",
-      "INSTALL_KUBECTL": "1",
-      "INSTALL_K9S": "1",
-      "INSTALL_FLUX": "1",
-      "INSTALL_KIND": "1",
-      "INSTALL_MINIKUBE": "1"
+      "DOCKER_GID": "${DOCKER_GID}"
     }
   },
+  "runArgs": [
+    "--privileged", // Required for Docker-in-Docker
+    "--cap-add",
+    "ALL",
+    "-v",
+    "/var/run/docker.sock:/var/run/docker.sock", // Mount Docker socket
+    "--network",
+    "host"
+  ],
+  "remoteUser": "${localEnv:USER}",
   "customizations": {
     "vscode": {
       "extensions": [
