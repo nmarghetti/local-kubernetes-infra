@@ -84,7 +84,7 @@
       # Start an empty minikube cluster
       ./start.sh --minikube
       # Start minikube cluster with dns
-      ./start.sh --minikube --minikube-addons ingress,ingress-dns --minikube-dns 1
+      ./start.sh --minikube --minikube-addons ingress,ingress-dns --minikube-dns
 
       # Retrieve minikube cluster config to add it to lens
       # cat ~/.kube/config | yq -o json | jq '.clusters |= [(.[] | select(.name == "minikube"))] | .contexts |= [(.[] | select(.name == "minikube"))] | .users |= [(.[] | select(.name == "minikube"))]' > ~/.kube/minikube.config

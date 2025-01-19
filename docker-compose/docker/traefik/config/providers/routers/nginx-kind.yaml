@@ -1,0 +1,79 @@
+# Access kind kubernetes cluster through nginx reverse proxy
+tls:
+  options:
+    kind:
+      sniStrict: false
+      clientAuth:
+        caFiles:
+          - /etc/traefik/certs/traefik-kind-ca.crt
+        clientAuthType: noclientcert
+
+http:
+  services:
+    nginx-kind:
+      loadBalancer:
+        servers:
+          - url: 'http://nginx'
+    nginx-kind-tls:
+      loadBalancer:
+        servers:
+          - url: 'https://nginx'
+
+  routers:
+    nginx-kind:
+      entryPoints:
+        - web
+      rule: Host(`nginx-kind.localhost`)
+      service: nginx-kind
+    nginx-kind-tls:
+      entryPoints:
+        - web
+      rule: Host(`nginx-kind-tls.localhost`)
+      service: nginx-kind
+    # nginx-kind-tls-secure:
+    #   entryPoints:
+    #     - websecure
+    #   rule: Host(`nginx-kind-tls.localhost`)
+    #   service: nginx-kind-tls
+    #   # tls:
+    #   #   options: kind
+    nginx-kind-k8s:
+      entryPoints:
+        - web
+        - websecure
+      rule: Host(`nginx-kind-k8s.localhost`)
+      service: nginx-kind
+
+    nginx-kind-path:
+      entryPoints:
+        - web
+      rule: Host(`localhost`) && PathPrefix(`/nginx-kind`)
+      service: nginx-kind
+      middlewares:
+        - nginx-kind-host
+        - nginx-kind-strip-prefix
+    nginx-kind-tls-path:
+      entryPoints:
+        - web
+      rule: Host(`localhost`) && PathPrefix(`/nginx-kind-tls`)
+      service: nginx-kind
+      middlewares:
+        - nginx-kind-tls-host
+        - nginx-kind-tls-strip-prefix
+    # nginx-kind-tls-path-secure:
+    #   entryPoints:
+    #     - websecure
+    #   rule: Host(`localhost`) && PathPrefix(`/nginx-kind-tls`)
+    #   service: nginx-kind-tls
+    #   middlewares:
+    #     - nginx-kind-tls-host
+    #     - nginx-kind-tls-strip-prefix
+    nginx-kind-k8s-path:
+      entryPoints:
+        - web
+        - websecure
+      rule: Host(`localhost`) && PathPrefix(`/nginx-kind-k8s`)
+      service: nginx-kind
+      middlewares:
+        - nginx-kind-k8s-host
+        - nginx-kind-k8s-strip-prefix

@@ -12,10 +12,15 @@ It also use traefik to access some resources on the cluster directly from localh
 
 ```shell
 # Here is the command to run the minimum needed for this playground to work
-./start.sh --kind --flux-path k8s/flux-playground/traefik-kind --docker-services "gitea"
+./start.sh --kind --flux-path k8s/flux-playground/traefik-kind --docker-services gitea
+
+# With this it would even be better
+./start.sh --kind --flux-path k8s/flux-playground/traefik-kind --docker-services nginx,traefik,gitea
 ```
 
-You can then check <http://localhost>.
+You can then check <http://localhost:8800>.
+
+If you activated nginx and traefik, you could check <http://localhost>.
 
 ## Node affinity
 

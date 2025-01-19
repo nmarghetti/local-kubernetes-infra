@@ -1,0 +1,27 @@
+http:
+  middlewares:
+    nginx-kind-host:
+      headers:
+        customRequestHeaders:
+          Host: nginx-kind.localhost
+    nginx-kind-tls-host:
+      headers:
+        customRequestHeaders:
+          Host: nginx-kind-tls.localhost
+    nginx-kind-k8s-host:
+      headers:
+        customRequestHeaders:
+          Host: nginx-kind-k8s.localhost
+
+    nginx-kind-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - '/nginx-kind'
+    nginx-kind-tls-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - '/nginx-kind-tls'
+    nginx-kind-k8s-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - '/nginx-kind-k8s'

@@ -1,0 +1,62 @@
+http:
+  services:
+    kind:
+      loadBalancer:
+        servers:
+          - url: 'http://nginx:80'
+
+  routers:
+    # Unfortunately, the replacePathRegex middleware does not work with Host
+    kind:
+      entryPoints:
+        - web
+      rule: Host(`*.kind.localhost`)
+      service: kind
+      middlewares:
+        - kind-remove-last-subdomain
+
+    # So we need to create a middleware for each host
+    kind-traefik:
+      entryPoints:
+        - web
+      rule: Host(`dashboard.traefik.kind.localhost`)
+      service: kind
+      middlewares:
+        - kind-traefik-host
+    kind-whoami:
+      entryPoints:
+        - web
+      rule: Host(`whoami.traefik.kind.localhost`)
+      service: kind
+      middlewares:
+        - kind-whoami-host
+    kind-podinfo:
+      entryPoints:
+        - web
+      rule: Host(`podinfo.traefik.kind.localhost`)
+      service: kind
+      middlewares:
+        - kind-podinfo-host
+    # kind-flux-automated:
+    #   entryPoints:
+    #     - web
+    #   rule: Host(`flux-automated.traefik.kind.localhost`)
+    #   service: kind
+    #   middlewares:
+    #     - kind-flux-automated-host
+    # kind-flux-webhook:
+    #   entryPoints:
+    #     - web
+    #   rule: Host(`flux-webhook.traefik.kind.localhost`)
+    #   service: kind
+    #   middlewares:
+    #     - kind-flux-webhook-host
+
+    # # docker registry webhook to trigger kind flux
+    # docker-registry-webhook:
+    #   entryPoints:
+    #     - web
+    #   rule: Host(`traefik`) && PathPrefix(`/hook`)
+    #   service: kind
+    #   middlewares:
+    #     - kind-flux-webhook-host

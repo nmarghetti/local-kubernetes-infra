@@ -59,7 +59,7 @@ curl -sS http://localhost:8088/api/charts/mychart/1.0.0 | jq
 First you need to start [this playground](../k8s/flux-playground/traefik-minikube-vault-helm/readme.md).
 
 ```shell
-./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,helm,dnsmasq
+./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns --docker-services gitea,helm,dnsmasq
 ```
 
 Then you can play with the helm and install it in another namespace.

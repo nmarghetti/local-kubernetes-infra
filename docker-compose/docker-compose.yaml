@@ -226,6 +226,8 @@ services:
     command: [nginx-debug, '-g', 'daemon off;']
     environment:
       NGINX_LOG_LEVEL: ${NGINX_LOG_LEVEL:-info}
+      KIND_CONTROL_PLANE_IP: ${KIND_CONTROL_PLANE_IP:-172.19.0.2}
+      MINIKUBE_IP: ${MINIKUBE_IP:-192.168.49.2}
     ports:
       - ${NGINX_PORT:-8081}:80
     volumes:
@@ -243,18 +245,19 @@ services:
     container_name: traefik
     image: traefik
     command:
-      - --log.level=DEBUG
+      - --log.level=${TRAEFIK_LOG_LEVEL:-INFO}
       - --api.insecure=true
       - --api.dashboard=true
       - --providers.docker
       - --providers.docker.exposedbydefault=false
     ports:
       - "${TRAEFIK_PORT:-80}:80"
+      - "${TRAEFIK_TLS_PORT:-443}:443"
       # The Web UI (enabled by --api.insecure=true)
       - "${TRAEFIK_DASHBOARD_PORT:-8080}:8080"
     labels:
       - traefik.enable=true
-      - traefik.log.level=DEBUG
+      - traefik.log.level=${TRAEFIK_LOG_LEVEL:-INFO}
       # - --providers.file.directory=/etc/traefik/providers
       # - --providers.file.watch=true
       # Define the router to access traefik dashboard from http://traefik.docker.localhost

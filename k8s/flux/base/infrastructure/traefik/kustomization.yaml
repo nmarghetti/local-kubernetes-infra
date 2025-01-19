@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - releases.yaml
   - service.yaml
+  - middlewares.yaml

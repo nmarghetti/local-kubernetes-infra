@@ -12,8 +12,9 @@ install_podinfo_with_kubectl() {
       kubectl --namespace info create deployment --replicas 1 --port 9898 --image stefanprodan/podinfo podinfo --dry-run=client -o yaml | kubectl set env --local -f - PODINFO_UI_MESSAGE="$PODINFO_UI_MESSAGE" -o yaml | kubectl apply -f -
     fi
     kubectl --namespace info expose deployment podinfo --type ClusterIP --port 9898
-    kubectl --namespace info create ingress --class nginx --rule 'podinfo.minikube/*=podinfo:9898' minikube-podinfo
-  # kubectl --namespace info create ingress --class nginx --rule 'podinfo.localhost/*=podinfo:9898' kind-podinfo
+    kubectl --namespace info create ingress --class nginx --rule 'podinfo.minikube/*=podinfo:9898' podinfo-minikube
+    kubectl --namespace info create ingress --class nginx --rule 'podinfo.kind.localhost/*=podinfo:9898' podinfo-kind
+    kubectl --namespace info create ingress --class nginx --rule '/podinfo=podinfo:9898' podinfo-prefix
   fi
 }
 

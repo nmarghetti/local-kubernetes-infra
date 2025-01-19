@@ -18,8 +18,8 @@
     "welcome": "echo 'Welcome to dev container world !!!'"
   },
   "remoteEnv": {
-    "XSERVER_DISPLAY": "${localEnv:DISPLAY}",
-    "DOCKER_COMPOSE_NAME": "devcontainer-services"
+    "XSERVER_DISPLAY": "${localEnv:DISPLAY}"
+    // "DOCKER_COMPOSE_NAME": "devcontainer-services"
   },
   "build": {
     "dockerfile": "Dockerfile.docker-amd64",

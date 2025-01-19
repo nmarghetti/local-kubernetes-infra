@@ -1,0 +1,33 @@
+http:
+  middlewares:
+    # This unfortunately does not work, it can only change the path but not the host
+    kind-remove-last-subdomain:
+      replacePathRegex:
+        regex: ^(https?://[^/]+\.kind)\.localhost(.*)$
+        replacement: $${1}$${2}
+
+    kind-traefik-host:
+      headers:
+        customRequestHeaders:
+          Host: dashboard.traefik.kind
+          Origin: http://localhost
+    kind-whoami-host:
+      headers:
+        customRequestHeaders:
+          Host: whoami.traefik.kind
+          Origin: http://localhost
+    kind-podinfo-host:
+      headers:
+        customRequestHeaders:
+          Host: podinfo.traefik.kind
+          Origin: http://localhost
+    kind-flux-automated-host:
+      headers:
+        customRequestHeaders:
+          Host: flux-automated.traefik.kind
+          Origin: http://localhost
+    kind-flux-webhook-host:
+      headers:
+        customRequestHeaders:
+          Host: flux-webhook.traefik.kind
+          Origin: http://localhost

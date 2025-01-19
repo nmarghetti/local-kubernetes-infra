@@ -1,0 +1,10 @@
+http:
+  middlewares:
+    nginx-minikube-k8s-host:
+      headers:
+        customRequestHeaders:
+          Host: nginx-minikube-k8s.localhost
+    nginx-minikube-k8s-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - '/nginx-minikube-k8s'

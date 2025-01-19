@@ -78,8 +78,9 @@ install_minikube() {
   log_info "Checking minikube $minkube_version"
   if ! type minikube >/dev/null 2>&1 ||
     ! (printf '%s\n%s\n' "$(minikube version -o json | jq -r '.minikubeVersion' | sed -re 's/^v?(.*)$/\1/')" "$minkube_version" | sort -r --check=quiet --version-sort); then
-    run_command sudo curl -fsSLo /usr/bin/minikube "https://storage.googleapis.com/minikube/releases/v${minkube_version}/minikube-linux-amd64" &&
-      sudo chmod a+x /usr/bin/minikube
+    run_command curl -fsSLO https://storage.googleapis.com/minikube/releases/v${MINIKUBE_VERSION}/minikube-linux-amd64 &&
+      sudo install -m 555 minikube-linux-amd64 /usr/local/bin/minikube &&
+      rm minikube-linux-amd64
   fi
   type minikube >/dev/null 2>&1 || return 1
 }
@@ -90,8 +91,9 @@ install_kind() {
   log_info "Checking kind $kind_version"
   if ! type kind >/dev/null 2>&1 ||
     ! (printf '%s\n%s\n' "$(kind --version | awk '{ print $3 }')" "$kind_version" | sort -r --check=quiet --version-sort); then
-    run_command sudo curl -fsSLo /usr/bin/kind "https://kind.sigs.k8s.io/dl/v${kind_version}/kind-linux-amd64" &&
-      sudo chmod a+x /usr/bin/kind
+    run_command curl -fsSLO https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 &&
+      sudo install -m 555 kind-linux-amd64 /usr/local/bin/kind &&
+      rm kind-linux-amd64
   fi
   type kind >/dev/null 2>&1 || return 1
 }

@@ -12,7 +12,7 @@ setup_dkd() {
   wait_server_up 10 2 "${registry_curl_args[@]}" "$registry_api" || exit_error "docker registry from $registry_api not accessible"
 
   log_info "Ensure to have dkd image built"
-  if [ ! "$(run_command curl -sS "${registry_curl_args[@]}" "$registry_api/_catalog" | jq '.repositories | to_entries[] | select(.value == "dkd") | .value' | xargs -r printf)" = "dkd" ] ||
+  if [ ! "$(run_command curl -sS "${registry_curl_args[@]}" "$registry_api/_catalog" | jq '.repositories // {} | to_entries[] | select(.value == "dkd") | .value' | xargs -r printf)" = "dkd" ] ||
     [ ! "$(run_command curl -sS "${registry_curl_args[@]}" "$registry_api/dkd/tags/list" | jq 'any(.tags[]; . == "latest")')" = "true" ]; then
     ./dkd/docker-build.sh
   fi

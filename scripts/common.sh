@@ -105,9 +105,16 @@ Options:
   -d, --debug                             : debug mode (default)
       --debug-full                        : debug bash
     --minikube                            : setup minikube
+    --minikube-addons <addon [addon...]>  : enable minikube addons eg. ingress,ingress-dns
+    --minikube-dns                        : setup dnsmasq to resolve minikube domain
     --minikube-dashboard                  : start minikube dashboard
     --kind                                : setup kind
+    --kind-port <port>                    : port on which kind listens for http (defaut 8880)
+    --kind-tls-port <port>                : port on which kind listens for https (defaut 8843)
+    --kind-podinfo                        : add podinfo in kind cluster
     --docker-services <service[,service]> : select docker services, comma separated, to setup amongs $(yq .services -o json <./docker-compose/docker-compose.yaml | jq -r '[keys[] | select(. | startswith("init-") | not)] | join(",")') (default all)
+    --traefik-log <level>                 : set traefik log level amongs TRACE,DEBUG,INFO,WARN,ERROR,FATAL,PANIC (default: INFO)
+    --nginx-log <level>                   : set nginx log level amongs debug,info,notice,warn,error,crit,alert,emerg (default: notice)
     --dkd                                 : setup dkd image
     --gitea-webhook                       : setup gitea webhook to notify flux
     --flux-path <path>                    : select flux path amongs $(find ./k8s/flux-playground -maxdepth 2 -name "flux-system" | tr '\n' ',' | head -c -1)
@@ -118,9 +125,6 @@ Options:
   -q                                      : quiet mode, print less information
   -h                                      : display this help
 
-Minikube options:
-  --minikube-addons <addon [addon...]> : enable minikube addons eg. ingress,ingress-dns
-  --minikube-dns                       : setup dnsmasq to resolve cluster domain (0|1, default: 0)
 EOM
 }
 
@@ -153,6 +157,9 @@ parse_args() {
   use_minikube=0
   start_minikube_dashboard=0
   use_kind=0
+  KIND_HTTP_PORT=${KIND_HTTP_PORT:-8800}
+  KIND_HTTPS_PORT=${KIND_HTTPS_PORT:-8843}
+  setup_kind_podinfo=0
   use_dkd=0
   use_flux=0
   flux_path=""
@@ -165,6 +172,8 @@ parse_args() {
   use_dnsmasq=0
   minikube_addons=
   docker_services=portainer
+  NGINX_LOG_LEVEL=info
+  TRAEFIK_LOG_LEVEL=info
   # reset getopts - check https://man.cx/getopts(1)
   OPTIND=1
   while getopts "hksqv-:" opt; do
@@ -189,12 +198,18 @@ parse_args() {
           minikube) use_minikube=1 ;;
           minikube-dashboard) start_minikube_dashboard=1 ;;
           kind) use_kind=1 ;;
-          dkd) use_dkd=1 ;;
-          gitea-webhook) GITEA_SET_WEBHOOK=1 ;;
-          minikube-dns)
-            use_dnsmasq="${!OPTIND}"
+          kind-port)
+            KIND_HTTP_PORT="${!OPTIND}"
             OPTIND=$((OPTIND + 1))
             ;;
+          kind-tls-port)
+            KIND_HTTPS_PORT="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
+          kind-podinfo) setup_kind_podinfo=1 ;;
+          dkd) use_dkd=1 ;;
+          gitea-webhook) GITEA_SET_WEBHOOK=1 ;;
+          minikube-dns) use_dnsmasq=1 ;;
           minikube-addons)
             minikube_addons="${!OPTIND}"
             OPTIND=$((OPTIND + 1))
@@ -218,6 +233,14 @@ parse_args() {
             ;;
           docker-services)
             docker_services="$(echo "${!OPTIND}" | tr ',' ' ')"
+            OPTIND=$((OPTIND + 1))
+            ;;
+          traefik-log)
+            TRAEFIK_LOG_LEVEL="$(echo "${!OPTIND}" | tr ',' ' ')"
+            OPTIND=$((OPTIND + 1))
+            ;;
+          nginx-log)
+            NGINX_LOG_LEVEL="$(echo "${!OPTIND}" | tr ',' ' ')"
             OPTIND=$((OPTIND + 1))
             ;;
           *)
@@ -253,6 +276,9 @@ parse_args() {
   export start_minikube_dashboard
   export minikube_addons
   export use_kind
+  export KIND_HTTP_PORT
+  export KIND_HTTPS_PORT
+  export setup_kind_podinfo
   export use_dnsmasq
   export use_flux
   export flux_path
@@ -264,5 +290,7 @@ parse_args() {
   export docker_services
   export use_dkd
   export GITEA_SET_WEBHOOK
+  export NGINX_LOG_LEVEL
+  export TRAEFIK_LOG_LEVEL
   return 0
 }

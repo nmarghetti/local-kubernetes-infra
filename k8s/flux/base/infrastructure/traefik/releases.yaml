@@ -21,6 +21,9 @@ spec:
     instanceLabelOverride: traefik
     log:
       level: DEBUG
+    logs:
+      general:
+        level: DEBUG
     rollingUpdate:
       maxUnavailable: 1
     deployment:

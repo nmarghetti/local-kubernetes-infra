@@ -8,10 +8,34 @@ data:
     <h1 style="color: #4485b8;">Here are some services available</h1>
     <p></p>
     <ul>
-    <li>Traefik dashboard - <a href="http://localhost/dashboard/" target="_blank" rel="noopener">http://localhost/dashboard/</a></li>
-    <li>Whoami - <a href="http://localhost/whoami/" target="_blank" rel="noopener">http://localhost/whoami/</a></li>
-    <li>Podinfo - <a href="http://localhost/podinfo/" target="_blank" rel="noopener">http://localhost/podinfo/</a></li>
-    <li>Podinfo swagger - <a href="http://localhost/podinfo/swagger/index.html" target="_blank" rel="noopener">http://localhost/podinfo/swagger/index.html</a></li>
+    <li>Traefik dashboard
+    <ul>
+    <li><a href="http://localhost:8800/dashboard/" target="_blank" rel="noopener">http://localhost:8800/dashboard/</a></li>
+    <li><a href="http://nginx-kind.localhost/dashboard/" target="_blank">http://nginx-kind.localhost/dashboard/</a></li>
+    <li><a href="http://dashboard.traefik.kind.localhost/dashboard/" target="_blank" rel="noopener">http://dashboard.traefik.kind.localhost/dashboard/</a></li>
+    </ul>
+    </li>
+    <li>Whoami
+    <ul>
+    <li><a href="http://localhost:8800/whoami/" target="_blank" rel="noopener">http://localhost:8800/whoami/</a></li>
+    <li><a href="http://nginx-kind.localhost/whoami/" target="_blank">http://nginx-kind.localhost/whoami/</a></li>
+    <li><a href="http://whoami.traefik.kind.localhost/" target="_blank" rel="noopener">http://whoami.traefik.kind.localhost/</a></li>
+    </ul>
+    </li>
+    <li>Podinfo<a href="http://localhost:8800/podinfo/" target="_blank" rel="noopener"></a>
+    <ul>
+    <li><a href="http://localhost:8800/podinfo/" target="_blank" rel="noopener">http://localhost:8800/podinfo/</a></li>
+    <li><a href="http://nginx-kind.localhost/podinfo/" target="_blank">http://nginx-kind.localhost/podinfo/</a></li>
+    <li><a href="http://podinfo.traefik.kind.localhost/" target="_blank" rel="noopener">http://podinfo.traefik.kind.localhost/</a></li>
+    </ul>
+    </li>
+    <li>Podinfo swagger<a href="http://localhost:8800/podinfo/swagger/index.html" target="_blank" rel="noopener"></a>
+    <ul>
+    <li><a href="http://localhost:8800/podinfo/swagger/index.html" target="_blank" rel="noopener">http://localhost:8800/podinfo/swagger/index.html</a></li>
+    <li><a href="http://nginx-kind.localhost/podinfo/swagger/index.html" target="_blank">http://nginx-kind.localhost/podinfo/swagger/index.html</a></li>
+    <li><a href="http://podinfo.traefik.kind.localhost/swagger/index.html" target="_blank" rel="noopener">http://podinfo.traefik.kind.localhost/swagger/index.html</a></li>
+    </ul>
+    </li>
     </ul>
     <p style="text-align: left;"></p>
     <p style="text-align: left;"></p>

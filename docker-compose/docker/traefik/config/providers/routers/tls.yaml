@@ -1,5 +1,26 @@
 # Certificates when using websecure endpoint
 tls:
+  stores:
+    # default:
+    #   defaultCertificate:
+    #     # Use kind certificate by default
+    #     certFile: /etc/traefik/certs/traefik-kind-server.crt
+    #     keyFile: /etc/traefik/certs/traefik-kind-server.key
+    minikube:
+      defaultCertificate:
+        certFile: /etc/traefik/certs/traefik-minikube-server.crt
+        keyFile: /etc/traefik/certs/traefik-minikube-server.key
+    kind:
+      defaultCertificate:
+        certFile: /etc/traefik/certs/traefik-kind-server.crt
+        keyFile: /etc/traefik/certs/traefik-kind-server.key
   certificates:
-    - certFile: /etc/traefik/certs/traefik-server.crt
-      keyFile: /etc/traefik/certs/traefik-server.key
+    - certFile: /etc/traefik/certs/traefik-minikube-server.crt
+      keyFile: /etc/traefik/certs/traefik-minikube-server.key
+      # stores:
+      #   - default
+      #   - minikube
+    - certFile: /etc/traefik/certs/traefik-kind-server.crt
+      keyFile: /etc/traefik/certs/traefik-kind-server.key
+      # stores:
+      #   - kind

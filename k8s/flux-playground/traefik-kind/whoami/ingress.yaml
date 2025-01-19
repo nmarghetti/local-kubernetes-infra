@@ -15,3 +15,10 @@ spec:
         - kind: Service
           name: whoami
           port: 80
+
+    - kind: Rule
+      match: Host(`whoami.traefik.kind`)
+      services:
+        - kind: Service
+          name: whoami
+          port: 80

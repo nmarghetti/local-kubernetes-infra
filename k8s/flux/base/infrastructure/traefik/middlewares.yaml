@@ -1,0 +1,37 @@
+---
+# The security middleware adds the necessary headers to any response handled by a
+# a route that refers to this middleware in order to get the best security practices.
+# It is mainly about enabling HSTS and forbid foreign frames.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: security
+spec:
+  headers:
+    referrerPolicy: no-referrer-when-downgrade
+    sslRedirect: true
+    browserXssFilter: true
+    contentTypeNosniff: true
+    stsIncludeSubdomains: true
+    stsSeconds: 31536000
+---
+# The compress middleware triggers compressions of payloads handled by the routes that
+# refers to this middleware.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: compress
+spec:
+  compress: {}
+---
+# The default middleware chains the security and compress middleware for conveniency.
+# It is the default middleware for all routes managed by the Traefik controller.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: default
+spec:
+  chain:
+    middlewares:
+      - name: security
+      - name: compress

@@ -8,10 +8,12 @@ resources:
 patches:
   - target:
       group: helm.toolkit.fluxcd.io
-      version: v2beta1
       kind: HelmRelease
       name: traefik
     patch: |-
       - op: replace
         path: /spec/chart/spec/sourceRef/namespace
         value: playground-traefik-kind
+      - op: replace
+        path: /spec/values/additionalArguments/1
+        value: --entryPoints.websecure.http.middlewares=playground-traefik-kind-default@kubernetescrd

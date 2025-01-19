@@ -6,7 +6,7 @@ ARG UID=1000
 ENV USER=$USERNAME
 
 # apt packages
-ARG APT_PACKAGES="curl jq git gitk gnupg gettext netcat-openbsd net-tools iproute2 moreutils apache2-utils dnsutils iputils-ping"
+ARG APT_PACKAGES="bash-completion curl jq git gitk gnupg gettext netcat-openbsd net-tools iproute2 moreutils apache2-utils dnsutils iputils-ping"
 # yq
 ARG YQ_INSTALL=1
 # mkcert
@@ -104,15 +104,17 @@ RUN if test $HELM_INSTALL -eq 1; then \
 
 # Install minikube
 RUN if test $MINIKUBE_INSTALL -eq 1; then \
-    sudo curl -fsSLo /usr/bin/minikube https://storage.googleapis.com/minikube/releases/v${MINIKUBE_VERSION}/minikube-linux-amd64 \
-      && sudo chmod +x /usr/bin/minikube \
+    curl -fsSLO https://storage.googleapis.com/minikube/releases/v${MINIKUBE_VERSION}/minikube-linux-amd64 \
+    && sudo install -m 555 minikube-linux-amd64 /usr/local/bin/minikube \
+    && rm minikube-linux-amd64 \
   ; fi
 
 # Install kind
 RUN if test $KIND_INSTALL -eq 1; then \
-    sudo curl -fsSLo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 \
-      && sudo chmod +x /usr/local/bin/kind \
-  ; fi
+    curl -fsSLO https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 \
+    && sudo install -m 555 kind-linux-amd64 /usr/local/bin/kind \
+    && rm kind-linux-amd64 \
+; fi
 
 # Install k9s
 RUN if test $K9S_INSTALL -eq 1; then \
@@ -128,25 +130,27 @@ RUN if test $FLUX_INSTALL -eq 1; then \
 
 # Install argocd
 RUN if test $ARGOCD_INSTALL -eq 1; then \
-    curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/v${ARGOCD_VERSION}/download/argocd-linux-amd64 \
+    curl -sSLO https://github.com/argoproj/argo-cd/releases/download/v${ARGOCD_VERSION}/argocd-linux-amd64 \
       && sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd \
       && rm argocd-linux-amd64 \
   ; fi
 
 
+ARG WORKDIR=/app
+
 # Copy all needed files
-COPY --chown=$USERNAME:$USERNAME . /app
+COPY --chown=$USERNAME:$USERNAME . "$WORKDIR"
 
 
 USER $USERNAME
 
 # Init the git repository
 RUN ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N "" \
-  && cd /app \
+  && cd "$WORKDIR" \
   && git config --global init.defaultBranch main \
   && git config --global user.email "apprunner@git.com" \
   && git config --global user.name $USERNAME \
-  && rm -f /app/certificates/.gitignore \
+  && rm -f "$WORKDIR"/certificates/.gitignore \
   && git init \
   && git add . \
   && git commit -m "Initial commit" \
@@ -155,13 +159,16 @@ RUN ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N "" \
 
 # Add certificates to minikube
 RUN mkdir -p /home/$USERNAME/.minikube/certs \
-  && cp /app/certificates/*.crt /home/$USERNAME/.minikube/certs/
+  && cp "$WORKDIR"/certificates/*.crt /home/$USERNAME/.minikube/certs/
 
 # Install dependencies
 # This step should be real quick as everything should have been installed above already
-RUN /app/scripts/setup_deps.sh
+RUN "$WORKDIR"/scripts/setup_deps.sh
 
-WORKDIR /app
+WORKDIR "$WORKDIR"
+
+RUN sudo mkdir -p /app \
+  && sudo ln -s "$PWD"/docker_entrypoint.sh /app/docker_entrypoint.sh
 
 ENTRYPOINT [ "bash" ]
 

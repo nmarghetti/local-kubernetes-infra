@@ -10,7 +10,9 @@ Usage: $0 [options]
 
 Options:
     --debug-full <0|1>             : run the container in full debug mode or not (default: 1)
+    --minikube <0|1>               : start minikube (default: 1)
     --minikube-dashboard           : start minikube dashboard
+    --kind <0|1>                   : start kind (default: 0)
     --services <service[,service]> : run the specified service(s) amongs $(yq .services -o json <./docker-compose/docker-compose.yaml | jq -r '[keys[] | select(. | startswith("init-") | not)] | join(",")') (default: portainer,gitea,helm)
     --clean <service[,service]>    : remove the docker volume for the specified service(s) amongs minikube,registry,gitea,helm,portainer (default: none)
     --clean-all                    : remove the entire localarch docker volume and container
@@ -20,7 +22,9 @@ EOM
 }
 
 clean_all=0
+START_MINIKUBE=1
 START_MINIKUBE_DASHBOARD=0
+START_KIND=0
 DOCKER_SERVICES=portainer,gitea,helm
 DOCKER_CLEAN_SERVICES=
 LOCAL_INFRA_SCENARIO=
@@ -54,7 +58,15 @@ while getopts "h-:" opt; do
           DOCKER_CLEAN_SERVICES="${!OPTIND}"
           OPTIND=$((OPTIND + 1))
           ;;
+        minikube)
+          START_MINIKUBE="${!OPTIND}"
+          OPTIND=$((OPTIND + 1))
+          ;;
         minikube-dashboard) START_MINIKUBE_DASHBOARD=1 ;;
+        kind)
+          START_KIND="${!OPTIND}"
+          OPTIND=$((OPTIND + 1))
+          ;;
         services)
           DOCKER_SERVICES="${!OPTIND}"
           OPTIND=$((OPTIND + 1))
@@ -106,6 +118,9 @@ export MINIKUBE_DASHBOARD_PORT=30083
 # shellcheck disable=SC2016
 envsubst '${PORTAINER_PORT},${GITEA_PORT},${GITEA_SET_WEBHOOK},${REGISTRY_PORT},${REGISTRY_UI_PORT},${HELM_PORT},${DNSMASQ_PORT},${DNSMASQ_UI_PORT},${PODINFO_PORT},${WHOAMI_PORT},${NGINX_PORT},${DKD_PORT},${TRAEFIK_PORT},${TRAEFIK_DASHBOARD_PORT},${MINIKUBE_DASHBOARD_PORT}' <./docker_entrypoint.template.sh >./docker_entrypoint.sh
 
+KIND_HTTP_PORT=30080
+KIND_HTTPS_PORT=30443
+
 # Retrieve system certificates if none are present yet
 find ./certificates -name "*.crt" ! -name "ca-bundle.crt" | wc -l | grep -qwv '0' && [ ! -f ./certificates/ca-bundle.crt ] &&
   ./certificates/retrieve_system_certificates.sh
@@ -118,11 +133,37 @@ if [ "$clean_all" -eq 1 ]; then
 fi
 ! docker volume ls -q | grep -qw localarch_docker-data && docker volume create localarch_docker-data >/dev/null
 
-docker buildx build -t localarch --output type=docker . &&
+kind_extra_args=()
+if [ "$START_KIND" -eq 1 ]; then
+  kind_extra_args=(
+    --volume
+    /sys/fs/cgroup:/sys/fs/cgroup:rw
+    --security-opt
+    seccomp=unconfined
+  )
+fi
+
+if [ "$START_KIND" -eq 1 ]; then
+  echo "Kind is not supported yet" >&2
+  exit 1
+fi
+
+docker buildx build -t localarch --build-arg USERNAME="${USER:-USERNAME}" --build-arg WORKDIR="$PWD" --output type=docker . &&
   {
     docker container stop localarch >/dev/null 2>&1
     docker container rm localarch >/dev/null 2>&1
-    docker run --privileged --cap-add=ALL -e DEBUG_FULL="$DEBUG_FULL" -e START_MINIKUBE_DASHBOARD="$START_MINIKUBE_DASHBOARD" -e DOCKER_SERVICES="$DOCKER_SERVICES" -e DOCKER_CLEAN_SERVICES="$DOCKER_CLEAN_SERVICES" -e LOCAL_INFRA_SCENARIO="$LOCAL_INFRA_SCENARIO" -e KIND_HTTP_PORT=30080 -e KIND_HTTPS_PORT=30443 -dti --name localarch -v localarch_docker-data:/docker-data \
+    docker run --privileged --cap-add=ALL \
+      ${kind_extra_args[@]} \
+      -e DEBUG_FULL="$DEBUG_FULL" \
+      -e START_MINIKUBE="$START_MINIKUBE" \
+      -e START_MINIKUBE_DASHBOARD="$START_MINIKUBE_DASHBOARD" \
+      -e START_KIND="$START_KIND" \
+      -e DOCKER_SERVICES="$DOCKER_SERVICES" \
+      -e DOCKER_CLEAN_SERVICES="$DOCKER_CLEAN_SERVICES" \
+      -e LOCAL_INFRA_SCENARIO="$LOCAL_INFRA_SCENARIO" \
+      -e KIND_HTTP_PORT="$KIND_HTTP_PORT" \
+      -e KIND_HTTPS_PORT="$KIND_HTTPS_PORT" \
+      -dti --name localarch -v localarch_docker-data:/docker-data \
       -p 30771:8443 \
       -p "$PORTAINER_PORT:$PORTAINER_PORT" \
       -p "$GITEA_PORT:$GITEA_PORT" \
@@ -136,6 +177,8 @@ docker buildx build -t localarch --output type=docker . &&
       -p "$TRAEFIK_PORT:$TRAEFIK_PORT" \
       -p "$TRAEFIK_DASHBOARD_PORT:$TRAEFIK_DASHBOARD_PORT" \
       -p "$MINIKUBE_DASHBOARD_PORT:$MINIKUBE_DASHBOARD_PORT" \
+      -p "$KIND_HTTP_PORT:$KIND_HTTP_PORT" \
+      -p "$KIND_HTTPS_PORT:$KIND_HTTPS_PORT" \
       -p 30050:30050 \
       -p 30051:30051 \
       -p 30052:30052 \
@@ -146,7 +189,7 @@ docker buildx build -t localarch --output type=docker . &&
       -p 30057:30057 \
       -p 30058:30058 \
       -p 30059:30059 \
-      localarch
+      localarch "$PWD"/docker_entrypoint.sh
     # -p "$REGISTRY_PORT:$REGISTRY_PORT" \
     # -p "$HELM_PORT:$HELM_PORT" \
   } || {
@@ -154,39 +197,40 @@ docker buildx build -t localarch --output type=docker . &&
   exit 1
 }
 
-cat <<EOM
+if [ "$START_MINIKUBE" -eq 1 ]; then
+  cat <<EOM
 
 Waiting for localarch container minikube kubernetes server to reply, check ./tmp/localarch.log for more details
 Run the following command if you want to see the localarch container logs: docker logs -f localarch
 
 EOM
 
-typeset -i cpt=0
-: >./tmp/localarch.log
-# wait 5min for minikube to be up and running
-while [ $cpt -lt 30 ] && ! docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version' &>>./tmp/localarch.log; do
-  printf '.'
-  sleep 10
-  cpt+=1
-done
-printf '\n\n'
+  typeset -i cpt=0
+  : >./tmp/localarch.log
+  # wait 5min for minikube to be up and running
+  while [ $cpt -lt 30 ] && ! docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version' &>>./tmp/localarch.log; do
+    printf '.'
+    sleep 10
+    cpt+=1
+  done
+  printf '\n\n'
 
-! docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version' &>/dev/null &&
-  {
-    echo "Unable to start localarch container" >&2
-    exit 1
-  }
+  ! docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version' &>/dev/null &&
+    {
+      echo "Unable to start localarch container" >&2
+      exit 1
+    }
 
-# Copy localarch minikube certificates to local system
-docker cp localarch:/usr/local/share/ca-certificates/minikube.crt /tmp/minikube-localarch.crt &&
-  sudo mv -f /tmp/minikube-localarch.crt /usr/local/share/ca-certificates/minikube-localarch.crt &&
-  sudo update-ca-certificates -f
+  # Copy localarch minikube certificates to local system
+  docker cp localarch:/usr/local/share/ca-certificates/minikube.crt /tmp/minikube-localarch.crt &&
+    sudo mv -f /tmp/minikube-localarch.crt /usr/local/share/ca-certificates/minikube-localarch.crt &&
+    sudo update-ca-certificates -f
 
-# Retrieve the minikube kubeconfig file
-docker exec -ti localarch cat /app/tmp/minikube_kubeconfig.yaml | yq -o json | jq '.clusters[0].name |= "minikube_localarch" | .contexts[0].name |= "minikube_localarch" | .contexts[0].context.cluster |= "minikube_localarch" | .contexts[0].context.user |= "minikube_localarch" | .users[0].name |= "minikube_localarch"' | yq 'del(.current-context)' | yq -P >./tmp/minikube_localarch_kubeconfig.yaml
-yq -i 'del(.clusters[0].cluster.certificate-authority-data) | del(.users[0].user)' ./tmp/minikube_localarch_kubeconfig.yaml
+  # Retrieve the minikube kubeconfig file
+  docker exec -ti localarch cat /app/tmp/minikube_kubeconfig.yaml | yq -o json | jq '.clusters[0].name |= "minikube_localarch" | .contexts[0].name |= "minikube_localarch" | .contexts[0].context.cluster |= "minikube_localarch" | .contexts[0].context.user |= "minikube_localarch" | .users[0].name |= "minikube_localarch"' | yq 'del(.current-context)' | yq -P >./tmp/minikube_localarch_kubeconfig.yaml
+  yq -i 'del(.clusters[0].cluster.certificate-authority-data) | del(.users[0].user)' ./tmp/minikube_localarch_kubeconfig.yaml
 
-cat <<EOM
+  cat <<EOM
 
 You can check the minikube cluster version: docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version'
 You can use the following kubeconfig file to access the minikube cluster: ./tmp/minikube_localarch_kubeconfig.yaml
@@ -195,3 +239,4 @@ You should be able to access the following services:
   - Links (if nginx and traefik are running): http://localhost:$NGINX_PORT
 
 EOM
+fi

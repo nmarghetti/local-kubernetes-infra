@@ -8,6 +8,18 @@ docker ps
 docker container ls
 docker image ls
 docker volume ls
+# Fully remove all unused docker resources (be careful)
+docker system prune
+
+# Restart a bunch of docker container and clean their logs
+for container in traefik nginx; do
+  # Retrieve the container id if exists
+  container_id=$(docker inspect --format="{{.Id}}" "$container") || continue
+  # Remove its logs
+  sudo truncate -s 0 /var/lib/docker/containers/"$container_id"/"$container_id"-json.log
+  # Restart the container container
+  docker container restart "$container"
+done
 ```
 
 ## Running a service with docker

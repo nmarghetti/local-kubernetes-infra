@@ -1,0 +1,23 @@
+# Access minikube kubernetes cluster through nginx reverse proxy
+http:
+  services:
+    nginx-minikube-k8s:
+      loadBalancer:
+        servers:
+          - url: 'http://nginx'
+  routers:
+    nginx-minikube-k8s:
+      entryPoints:
+        - web
+      rule: Host(`nginx-minikube-k8s.localhost`)
+      service: nginx-minikube-k8s
+      middlewares:
+        - nginx-minikube-k8s-host
+    nginx-minikube-k8s-path:
+      entryPoints:
+        - web
+      rule: Host(`localhost`) && PathPrefix(`/nginx-minikube-k8s`)
+      service: nginx-minikube-k8s
+      middlewares:
+        - nginx-minikube-k8s-host
+        - nginx-minikube-k8s-strip-prefix

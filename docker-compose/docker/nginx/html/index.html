@@ -2,40 +2,70 @@
 <p></p>
 <p><strong>Direct access from docker compose</strong></p>
 <ul>
-<li>This nginx home - <a href="http://localhost:8081/" target="_blank" rel="noopener">http://localhost:8081/</a></li>
-<li>Portainer - <a href="http://localhost:9400/" target="_blank" rel="noopener">http://localhost:9400/</a></li>
-<li>Gitea - <a href="http://localhost:3000/" target="_blank" rel="noopener">http://localhost:3000/</a></li>
-<li>Docker registry - <a href="http://localhost:8087/" target="_blank" rel="noopener">http://localhost:8087/</a></li>
-<li>Helm registry - <a href="http://localhost:8088/api/charts" target="_blank" rel="noopener">http://localhost:8088/api/charts</a></li>
-<li>Whoami - <a href="http://localhost:9080/" target="_blank" rel="noopener">http://localhost:9080/</a></li>
-<li>Podinfo - <a href="http://localhost:9898/" target="_blank" rel="noopener">http://localhost:9898/</a></li>
-<li>Dkd - <a href="http://localhost:8100/dkd/docs" target="_blank" rel="noopener">http://localhost:8100/dkd/docs/</a></li>
-<li>Traefik dashboard - <a href="http://localhost:8080/" target="_blank" rel="noopener">http://localhost:8080/</a></li>
-<li>Dnsmasq - <a href="http://localhost:3053/" target="_blank" rel="noopener">http://localhost:3053/</a></li>
-<li>Minikube kubernetes server api - <a href="https://localhost:32771/version" target="_blank" rel="noopener">https://localhost:32771/version</a></li>
+<li>This nginx home - <a href="http://localhost:8081/" target="_blank" rel="noopener">http://localhost:8081/</a> - (<code>./start.sh --docker-services nginx</code>)</li>
+<li>Portainer - <a href="http://localhost:9400/" target="_blank" rel="noopener">http://localhost:9400/</a> - (<code>./start.sh --docker-services portainer</code>)</li>
+<li>Gitea - <a href="http://localhost:3000/" target="_blank" rel="noopener">http://localhost:3000/</a> - (<code>./start.sh --docker-services gitea</code>)</li>
+<li>Docker registry - <a href="http://localhost:8087/" target="_blank" rel="noopener">http://localhost:8087/</a> - (<code>./start.sh --docker-services registry,registry-ui</code>)</li>
+<li>Helm registry - <a href="http://localhost:8088/api/charts" target="_blank" rel="noopener">http://localhost:8088/api/charts</a> - (<code>./start.sh --docker-services helm</code>)</li>
+<li>Whoami - <a href="http://localhost:9080/" target="_blank" rel="noopener">http://localhost:9080/</a> - (<code>./start.sh --docker-services whoami</code>)</li>
+<li>Podinfo - <a href="http://localhost:9898/" target="_blank" rel="noopener">http://localhost:9898/</a> - (<code>./start.sh --docker-services podinfo</code>)</li>
+<li>Dkd - <a href="http://localhost:8100/dkd/docs" target="_blank" rel="noopener">http://localhost:8100/dkd/docs/</a> - (<code>./start.sh --docker-services dkd</code>)</li>
+<li>Traefik - <a href="http://localhost:8080/" target="_blank" rel="noopener">http://localhost:8080/</a> - dashboard (<code>./start.sh --docker-services traefik</code>)</li>
+<li>Dnsmasq - <a href="http://localhost:3053/" target="_blank" rel="noopener">http://localhost:3053/</a> - (<code>./start.sh --docker-services dnsmasq</code>)</li>
+<li>Minikube kubernetes server api - <a href="https://localhost:32771/version" target="_blank" rel="noopener">https://localhost:32771/version</a> - (<code>./start.sh --minikube</code>)</li>
+<li>Kind (<code>./start.sh --kind</code>)
+<ul>
+<li>kubernetes server api - <a href="https://localhost:32443/version" target="_blank">https://localhost:32443/version</a><a href="https://localhost:32771/version" target="_blank" rel="noopener"></a></li>
+<li>http entry - <a href="http://localhost:8800/" target="_blank">http://localhost:8800/</a></li>
+<li>https entry - <a href="https://localhost:8843/" target="_blank">https://localhost:8843/</a></li>
+</ul>
+</li>
 </ul>
 <p><strong>Access if traefik in docker compose is activated</strong></p>
 <ul>
-<li>This nginx home - <a href="http://localhost/" target="_blank" rel="noopener">http://localhost/</a></li>
-<li>Portainer - <a href="http://portainer.docker.localhost/" target="_blank" rel="noopener">http://portainer.docker.localhost/</a></li>
-<li>Gitea - <a href="http://gitea.docker.localhost/" target="_blank" rel="noopener">http://gitea.docker.localhost/</a></li>
-<li>Docker registry - <a href="http://registry-ui.docker.localhost/" target="_blank" rel="noopener">http://registry-ui.docker.localhost/</a></li>
-<li>Helm registry - <a href="http://helm.docker.localhost/api/charts" target="_blank" rel="noopener">http://helm.docker.localhost/api/charts</a></li>
-<li>Whoami - <a href="http://whoami.docker.localhost/" target="_blank" rel="noopener">http://whoami.docker.localhost/</a></li>
-<li>Podinfo - <a href="http://podinfo.docker.localhost/" target="_blank" rel="noopener">http://podinfo.docker.localhost/</a></li>
-<li>Traefik dashboard - <a href="http://traefik.docker.localhost/" target="_blank" rel="noopener">http://traefik.docker.localhost/</a></li>
-</ul>
-<p><strong>Access to minikube kubernetes server api if minikube, nginx and traefik are started</strong></p>
+<li>This nginx home - <a href="http://localhost/" target="_blank" rel="noopener">http://localhost/</a> - (<code>./start.sh --docker-services traefik,nginx</code>)</li>
+<li>Portainer - <a href="http://portainer.docker.localhost/" target="_blank" rel="noopener">http://portainer.docker.localhost/</a> - (<code>./start.sh --docker-services traefik,portainer</code>)</li>
+<li>Gitea - <a href="http://gitea.docker.localhost/" target="_blank" rel="noopener">http://gitea.docker.localhost/</a> - (<code>./start.sh --docker-services traefik,gitea</code>)</li>
+<li>Docker registry - <a href="http://registry-ui.docker.localhost/" target="_blank" rel="noopener">http://registry-ui.docker.localhost/</a> - (<code>./start.sh --docker-services traefik,registry,registry-ui</code>)</li>
+<li>Helm registry - <a href="http://helm.docker.localhost/api/charts" target="_blank" rel="noopener">http://helm.docker.localhost/api/charts</a>- (<code>./start.sh --docker-services traefik,helm</code>)</li>
+<li>Whoami - <a href="http://whoami.docker.localhost/" target="_blank" rel="noopener">http://whoami.docker.localhost/</a> - (<code>./start.sh --docker-services traefik,whoami</code>)</li>
+<li>Podinfo - <a href="http://podinfo.docker.localhost/" target="_blank" rel="noopener">http://podinfo.docker.localhost/</a> (<code>./start.sh --docker-services traefik,podinfo</code>)</li>
+<li>Traefik dashboard - <a href="http://traefik.docker.localhost/" target="_blank" rel="noopener">http://traefik.docker.localhost/</a> - (<code>./start.sh --docker-services traefik</code>)</li>
+<li>Minikube
 <ul>
-<li>Minikube k8s - <a href="http://nginx-k8s.localhost/version" target="_blank" rel="noopener">http://nginx-k8s.localhost/version</a> - <a href="http://localhost/nginx-k8s/version" target="_blank" rel="noopener">http://localhost/nginx-k8s/version</a></li>
+<li>k8s server api - <a href="http://nginx-minikube-k8s.localhost/version" target="_blank" rel="noopener">http://nginx-minikube-k8s.localhost/version</a> - <a href="http://localhost/nginx-minikube-k8s/version" target="_blank" rel="noopener">http://localhost/nginx-minikube-k8s/version</a> - (<code>./start.sh --minikube --docker-services traefik,nginx</code>)</li>
+<li>dashboard - <a href="http://localhost:8083/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=_all" target="_blank" rel="noopener">http://localhost:8083/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=_all</a> - (<code>./start.sh --minikube --minikube-dashboard</code>)</li>
 </ul>
-<p><strong>Access to minikube cluster dashboard</strong></p>
-<p>If you added the parameter --minikube-dashboard</p>
+</li>
+<li>Kind (<code>./start.sh --kind --docker-services traefik,nginx</code>)
 <ul>
-<li>Minikube dashboard - <a href="http://localhost:8083/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=_all" target="_blank" rel="noopener">http://localhost:8083/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=_all</a></li>
+<li>k8s server api - <a href="https://localhost:32443/version" target="_blank">https://localhost:32443/version</a></li>
+<li>http entry - <a href="http://localhost:8800/" target="_blank">http://localhost:8800/</a> (would return 404)</li>
+<li>https entry - <a href="https://localhost:8843/" target="_blank">https://localhost:8843/</a> (would return 404)</li>
+<li>traefik dashboard - <a href="http://localhost:8800/dashboard/" target="_blank">http://localhost:8800/dashboard/</a> - <a href="https://localhost:8843/dashboard/" target="_blank">https://localhost:8843/dashboard/</a></li>
+</ul>
+</li>
+</ul>
+<ul></ul>
+<p><strong>Access to kind cluster through traefik/nginx from docker compose</strong></p>
+<p>You can run the traefik-kind flux playground with the following command:</p>
+<p><code>./start.sh --kind --docker-services traefik,nginx,gitea --flux-path k8s/flux-playground/traefik-kind</code></p>
+<ul>
+<li>Kind
+<ul>
+<li>k8s server api - <a href="http://nginx-kind-k8s.localhost/version" target="_blank" rel="noopener">http://nginx-kind-k8s.localhost/version</a><a href="http://nginx-minikube-k8s.localhost/version" target="_blank" rel="noopener"></a> - <a href="http://localhost/nginx-kind-k8s/version" target="_blank" rel="noopener">http://localhost/nginx-kind-k8s/version</a><a href="http://nginx-kind-k8s.localhost/version" target="_blank" rel="noopener"></a></li>
+<li>http entry - <a href="http://nginx-kind.localhost/" target="_blank" rel="noopener">http://nginx-kind.localhost/</a> - <a href="http://localhost/nginx-kind/" target="_blank" rel="noopener">http://localhost/nginx-kind/</a><a href="http://nginx-kind-k8s.localhost/" target="_blank" rel="noopener"></a> (homepage with  links to traefik dashboard, whoami, podinfo, etc.)</li>
+<li>https entry using http - <a href="http://nginx-kind-tls.localhost/" target="_blank" rel="noopener">http://nginx-kind-tls.localhost/</a> - <a href="http://localhost/nginx-kind-tls/" target="_blank" rel="noopener">http://localhost/nginx-kind-tls/</a> (homepage with  links to traefik dashboard, whoami, podinfo, etc.)</li>
+<li>https entry using tls - <a href="https://nginx-kind-tls.localhost/" target="_blank" rel="noopener">https://nginx-kind-tls.localhost/</a> - <a href="https://localhost/nginx-kind-tls/" target="_blank" rel="noopener">https://localhost/nginx-kind-tls/</a> (would return 404, not working yet)</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>Homepage</strong> - <a href="http://nginx-kind.localhost/" target="_blank" rel="noopener">http://nginx-kind.localhost/</a></li>
 </ul>
 <p><strong>Access to minikube cluster directly through traefik from docker compose</strong></p>
-<p>You can run the traefik-minikube-vault-helm flux playground with the following command: <code>PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik </code></p>
+<p>You can run the traefik-minikube-vault-helm flux playground with the following command:</p>
+<p><code>PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --minikube-addons "ingress ingress-dns" --minikube-dns --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik</code></p>
 <ul>
 <li>Traefik dashboard - <a href="http://dashboard.traefik.minikube.localhost/dashboard/" target="_blank" rel="noopener">http://dashboard.traefik.minikube.localhost/dashboard/</a></li>
 <li>Whoami - <a href="http://whoami.traefik.minikube.localhost/" target="_blank" rel="noopener">http://whoami.traefik.minikube.localhost/</a></li>
@@ -44,7 +74,7 @@
 <li>Flux webhook - <a href="http://flux-webhook.traefik.minikube.localhost/" target="_blank" rel="noopener">http://flux-webhook.traefik.minikube.localhost/ (that works only with POST method, you can try this to notify flux to reconciliate: <code>curl -sSf -X POST "http://flux-webhook.traefik.minikube.localhost/hook/254ac6f85aab9ac284f9990b5349623be0c3471ff894abc568dc28d3419cd49e" -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"events": []}') </code></a></li>
 </ul>
 <p><strong>Access to minikube cluster, to be opened in browser through WSL</strong></p>
-<p>You can run the minikube traefik flux playground with the following command: <code>./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube --docker-services "gitea helm dnsmasq"</code></p>
+<p>You can run the minikube traefik flux playground with the following command: <code>./start.sh --minikube --minikube-addons "ingress ingress-dns" --minikube-dns --flux-path k8s/flux-playground/traefik-minikube --docker-services gitea,dnsmasq</code></p>
 <ul>
 <li>Traefik dashboard - <a href="http://dashboard.traefik.minikube/" target="_blank" rel="noopener">http://dashboard.traefik.minikube/</a></li>
 <li>Whoami - <a href="http://whoami.traefik.minikube/" target="_blank" rel="noopener">http://whoami.traefik.minikube/</a></li>

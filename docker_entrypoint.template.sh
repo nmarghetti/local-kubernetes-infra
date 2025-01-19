@@ -26,7 +26,7 @@ done
 
 docker_compose_name=services
 
-cat <<-EOM >/app/docker-compose/docker-compose.env
+cat <<-EOM >docker-compose/docker-compose.env
 DOCKER_COMPOSE_NAME=$docker_compose_name
 PORTAINER_PORT=${PORTAINER_PORT}
 GITEA_PORT=${GITEA_PORT}
@@ -82,7 +82,7 @@ scenario_traefik_minikube() {
   printf "\nLets play with flux and traefik on minikube...\n"
   sleep 5
   message="Hello from minikube cluster inside the localarch docker container"
-  PODINFO_UI_MESSAGE="$message" ./start.sh --minikube $minikube_dashboard_param --flux-path k8s/flux-playground/traefik-minikube --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,dnsmasq
+  PODINFO_UI_MESSAGE="$message" ./start.sh --minikube $minikube_dashboard_param --flux-path k8s/flux-playground/traefik-minikube --minikube-addons "ingress ingress-dns" --minikube-dns --docker-services gitea,dnsmasq
 
   printf "\nChecking how whoami answers...\n"
   if kubectl wait --for=condition=available --timeout=60s deployment/whoami -n playground-traefik-minikube; then
@@ -117,7 +117,7 @@ scenario_traefik_minikube_vault_helm() {
   printf "\nLets play with flux to orchestrate external-secrets vault, local helm and traefik on minikube...\n"
   sleep 5
   message="Hello from minikube cluster inside the localarch docker container"
-  PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube $minikube_dashboard_param --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
+  PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube $minikube_dashboard_param --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
 
   printf "\nChecking how whoami answers...\n"
   if kubectl wait --for=condition=available --timeout=60s deployment/apps-mychart-whoami -n apps; then
@@ -195,32 +195,36 @@ minikube_dashboard_param=
 
 [ -z "$DOCKER_SERVICES" ] && DOCKER_SERVICES=portainer,gitea,helm
 
-if ./start.sh --minikube $minikube_dashboard_param --docker-services "$DOCKER_SERVICES" $debug_param; then
-  echo "minikube cluster is ready"
+if [ "$START_MINIKUBE" -eq 1 ]; then
+  if ./start.sh --minikube $minikube_dashboard_param --docker-services "$DOCKER_SERVICES" $debug_param; then
+    echo "minikube cluster is ready"
 
-  # Expose the kubernetes api server
-  kubectl --context minikube proxy --port 8443 --address=0.0.0.0 &
+    # Expose the kubernetes api server
+    kubectl --context minikube proxy --port 8443 --address=0.0.0.0 &
 
-  # Run the scenario if provided
-  if [ -n "$LOCAL_INFRA_SCENARIO" ]; then
-    case "$LOCAL_INFRA_SCENARIO" in
-      traefik-minikube) scenario_traefik_minikube ;;
-      traefik-minikube-vault-helm) scenario_traefik_minikube_vault_helm ;;
-      *)
-        echo "Unknown scenario $LOCAL_INFRA_SCENARIO"
-        exit 1
-        ;;
-    esac
+    # Run the scenario if provided
+    if [ -n "$LOCAL_INFRA_SCENARIO" ]; then
+      case "$LOCAL_INFRA_SCENARIO" in
+        traefik-minikube) scenario_traefik_minikube ;;
+        traefik-minikube-vault-helm) scenario_traefik_minikube_vault_helm ;;
+        *)
+          echo "Unknown scenario $LOCAL_INFRA_SCENARIO"
+          exit 1
+          ;;
+      esac
+    fi
+  else
+    echo "An error occured with minikube, please check the logs"
   fi
-else
-  echo "An error occured with minikube, please check the logs"
 fi
 
-# if ./start.sh --kind --flux "" $debug_param; then
-#   echo "kind cluster is ready"
-# else
-#   echo "An error occured with minikube, please check the logs"
-# fi
+if [ "$START_KIND" -eq 1 ]; then
+  if ./start.sh --kind --docker-services "$DOCKER_SERVICES" $debug_param; then
+    echo "kind cluster is ready"
+  else
+    echo "An error occured with minikube, please check the logs"
+  fi
+fi
 
 cat <<EOM
 
@@ -229,8 +233,8 @@ Here are some usefull commands to interact with the localarch container:
 
 - check the logs: docker logs -f localarch
 - connect to localarch container: docker exec -it localarch bash
-  - run minikube cluster: ./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,helm,dnsmasq --debug-full
-  - run minikube cluster with more complex scenario: PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,traefik,nginx --debug-full
+  - run minikube cluster: ./start.sh --minikube --flux-path k8s/flux-playground/traefik-minikube --minikube-addons "ingress ingress-dns" --minikube-dns --docker-services gitea,helm,dnsmasq --debug-full
+  - run minikube cluster with more complex scenario: PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,traefik,nginx --debug-full
   - run kind cluster (does not work yet): ./start.sh --kind --debug-full
   - check all resource on cluster: kubectl get all -A
   - check all kind of resources on cluster: kubectl api-resources --sort-by name

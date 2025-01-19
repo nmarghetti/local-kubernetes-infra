@@ -75,7 +75,8 @@ setup_minikube() {
     run_command minikube start --embed-certs --insecure-registry="${DOCKER_COMPOSE_HOST}:${REGISTRY_PORT}" -v=5 || exit_error "Unable to start local cluster"
 
     # Add minikube certificates to nginx service
-    kubectl config view --minify --raw | yq -o json | jq '.clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-k8s/"' | yq -P >./tmp/minikube_kubeconfig.yaml
+    kubectl config view --minify --raw | yq -o json | jq '.clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-minikube-k8s/"' | yq -P >./tmp/minikube_kubeconfig.yaml
+    cp ~/.minikube/ca.key ./tmp/minikube_ca.key
     yq -r '.clusters[0].cluster.certificate-authority-data' <./tmp/minikube_kubeconfig.yaml | base64 -d >./tmp/minikube_ca.crt
     yq -r '.users[0].user.client-certificate-data' <./tmp/minikube_kubeconfig.yaml | base64 -d >./tmp/minikube_client.crt
     yq -r '.users[0].user.client-key-data' <./tmp/minikube_kubeconfig.yaml | base64 -d >./tmp/minikube_client.key
@@ -90,8 +91,9 @@ setup_minikube() {
       fi
     fi
     # Add minikube certificates to traefik service
-    if [ ! -f ./docker-compose/docker/nginx/certs/minikube_ca.crt ] || ! openssl x509 -noout -issuer -in ./docker-compose/docker/traefik/config/certs/traefik-server.crt | grep -qi minikube; then
-      ./docker-compose/docker/traefik/config/certs/generate.sh
+    if [ ! -f ./docker-compose/docker/traefik/config/certs/minikube_ca.crt ] || ! openssl x509 -noout -issuer -in ./docker-compose/docker/traefik/config/certs/traefik-minikube-server.crt | grep -qi kind; then
+      ./docker-compose/docker/traefik/config/certs/generate.sh minikube
+      ./docker-compose/docker/traefik/config/certs/generate_ca.sh
       if key_in_array traefik "$docker_services" " "; then
         run_command docker restart traefik >/dev/null || exit_error "Unable to restart traefik service"
       fi
@@ -134,7 +136,7 @@ setup_minikube() {
   # Connect some services to minikube network
   for service in traefik nginx dkd; do
     if [ "$(docker inspect -f '{{.State.Status}}' "$service" 2>/dev/null)" = "running" ]; then
-      if [ ! "$(docker inspect "$service" | jq -r '.[0].NetworkSettings.Networks | to_entries | .[] | select(.key == "minikube").key')" = "minikube" ]; then
+      if [ ! "$(docker inspect "$service" | jq -r '.[0].NetworkSettings.Networks // {} | to_entries | .[] | select(.key == "minikube").key')" = "minikube" ]; then
         run_command docker network connect minikube "$service" || exit_error "Unable to connect $service from minikube network"
       fi
     fi

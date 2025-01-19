@@ -1,5 +1,7 @@
 # This default configuration is not used
 
+# error_log /var/log/nginx/error.log ${NGINX_LOG_LEVEL};
+
 server {
     listen       80;
     listen  [::]:80;

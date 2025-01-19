@@ -9,38 +9,28 @@ SCRIPTS=$(git rev-parse --show-toplevel)/scripts
 # shellcheck source=../../../../../scripts/common.sh
 . "$SCRIPTS"/common.sh
 
-ca_key=~/.minikube/ca.key
-ca_crt=~/.minikube/ca.crt
-ca_name=minikubeCA
+cluster=$1
+if [ -z "$cluster" ]; then
+  log_error "No cluster provided (minikube or kind). Usage: $0 <cluster>"
+  exit 1
+fi
+
+ca_key="$GIT_ROOT/tmp/${cluster}_ca.key"
+ca_crt="$GIT_ROOT/tmp/${cluster}_ca.crt"
+ca_name="${cluster}CA"
 certs_path=.
 
-# If minikube is not even installed yet, generate some certificates
-if [ ! -f ~/.minikube/ca.key ]; then
+# If cluster is not even installed yet, generate some certificates with mkcert
+if [ ! -f "$ca_key" ]; then
   ca_key="$certs_path"/rootCA-key.pem
   ca_crt="$certs_path"/rootCA.pem
   ca_name=mkcertCA
-  CAROOT="$certs_path" mkcert -key-file "$certs_path"/traefik-server.key -cert-file "$certs_path"/traefik-server.crt "localhost"
+  CAROOT="$certs_path" mkcert -key-file "$certs_path/traefik-${cluster}-server.key" -cert-file "$certs_path/traefik-${cluster}-server.crt" "localhost"
 fi
 
-generate_ca_certificate() {
-  cp -f /etc/ssl/certs/ca-certificates.crt "$certs_path"/ca-certificates.crt
-  cat <<EOM >>"$certs_path"/ca-certificates.crt
-
-$ca_name
-=====================================
-EOM
-  cat "$ca_crt" >>"$certs_path"/ca-certificates.crt
-
-}
-if [ ! -f "$certs_path"/ca-certificates.crt ]; then
-  generate_ca_certificate
-fi
-
-if [ -f "$certs_path"/traefik-server.crt ] && openssl verify -CAfile "$ca_crt" "$certs_path"/traefik-server.crt &>/dev/null; then
-  log_info "Certificate already generated"
+if [ -f "$certs_path/traefik-${cluster}-server.crt" ] && openssl verify -CAfile "$ca_crt" "$certs_path/traefik-${cluster}-server.crt" &>/dev/null; then
+  log_info "Certificate already generated for $cluster"
   exit 0
-else
-  generate_ca_certificate
 fi
 
 get_subject() {
@@ -49,13 +39,13 @@ get_subject() {
 
 # openssl verify -CAfile "$ca_crt" "$server_crt"
 declare -A servers=(
-  ['traefik']='{"CN": "traefik", "hosts": ["traefik", "traefik.docker.localhost", "localhost", "nginx-k8s.localhost"]}'
+  ['traefik']='{"CN": "traefik-'"$cluster"'", "hosts": ["traefik", "traefik.docker.localhost", "localhost", "nginx-minikube-k8s.localhost", "nginx-kind-k8s.localhost", "nginx-kind-tls.localhost"]}'
 )
 for server in "${!servers[@]}"; do
-  server_key="$certs_path"/${server}-server.key
-  server_csr="$certs_path"/${server}-server.csr
-  server_crt="$certs_path"/${server}-server.crt
-  server_conf="$certs_path"/${server}-server.conf
+  server_key="$certs_path/${server}-${cluster}-server.key"
+  server_csr="$certs_path/${server}-${cluster}-server.csr"
+  server_crt="$certs_path/${server}-${cluster}-server.crt"
+  server_conf="$certs_path/${server}-${cluster}-server.conf"
 
   cat <<EOF >"$server_conf"
 [req]

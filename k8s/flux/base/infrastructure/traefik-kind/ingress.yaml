@@ -23,6 +23,15 @@ spec:
                   number: 8080
       # host: 'localhost'
 ---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: dashboard-strip-prefix
+spec:
+  stripPrefixRegex:
+    regex:
+      - '/dashboard/?'
+---
 # This is the traefik ingress route to access the traefik dashboard via http://localhost/dashboard
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -41,8 +50,21 @@ spec:
           name: traefik
           port: 9000
     - kind: Rule
-      match: HeaderRegexp(`Referer`, `https?://localhost/dashboard/.*`) && (PathPrefix(`/api`) || PathPrefix(`/assets`) || PathPrefix(`/providers`))
+      match: HeaderRegexp(`Referer`, `https?://.*localhost(:[0-9]+)?/dashboard/.*`) && (PathPrefix(`/api`) || PathPrefix(`/assets`) || PathPrefix(`/providers`))
       services:
         - kind: Service
           name: traefik
           port: 9000
+
+    - kind: Rule
+      match: Host(`dashboard.traefik.kind`)
+      services:
+        - kind: TraefikService
+          name: dashboard@internal
+      middlewares:
+        - name: dashboard-strip-prefix
+    - kind: Rule
+      match: Host(`dashboard.traefik.kind`) && PathPrefix(`/api`)
+      services:
+        - kind: TraefikService
+          name: api@internal

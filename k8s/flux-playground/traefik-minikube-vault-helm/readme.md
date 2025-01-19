@@ -8,7 +8,7 @@ This is a complete showcase of:
 
 ```shell
 # Here is the command to run the minimum needed for this playground to work
-PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns 1 --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
+PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
 
 # You can then check podinfo message
 curl -sSf http://podinfo.minikube | jq -r '.message'

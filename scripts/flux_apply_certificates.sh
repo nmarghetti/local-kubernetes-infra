@@ -34,7 +34,9 @@ if [ ! "$(cat ../certificates/ca-bundle.crt)" = "$(kubectl get -n flux-system co
     echo '====================================='
     cat ../docker-compose/docker/certificates/ca.crt
   } >>"$tmpfile"
-  run_command kubectl create configmap -n flux-system certificates --dry-run=client -o yaml --from-file=local-ca.crt=../docker-compose/docker/certificates/ca.crt --from-file=ca-bundle.crt=../certificates/ca-bundle.crt --from-file=ca-certificates.crt="$tmpfile" | kubectl apply -f -
+  # Ensure that the config map does not exist otherwise its content is too big for its annotation
+  kubectl get configmap -n flux-system certificates &>/dev/null && kubectl delete configmap -n flux-system certificates &>/dev/null
+  run_command kubectl create configmap -n flux-system certificates --from-file=local-ca.crt=../docker-compose/docker/certificates/ca.crt --from-file=ca-bundle.crt=../certificates/ca-bundle.crt --from-file=ca-certificates.crt="$tmpfile"
   rm -f -- "$tmpfile"
 fi
 

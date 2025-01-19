@@ -2,11 +2,11 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: strip-prefix
+  name: strip-podinfo-prefix
 spec:
   stripPrefixRegex:
     regex:
-      - '/[^/]+'
+      - '/podinfo'
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -26,17 +26,28 @@ spec:
           name: podinfo
           port: 9898
       middlewares:
-        - name: strip-prefix
+        - name: strip-podinfo-prefix
     # This route allow to have access to podinfo api when called from the podinfo main page
     - kind: Rule
-      match: HeaderRegexp(`Referer`, `https?://localhost/podinfo`) && PathPrefix(`/api`)
+      match: HeaderRegexp(`Referer`, `https?://.*localhost(:[0-9]+)?/podinfo`) && PathPrefix(`/api`)
       services:
         - kind: Service
           name: podinfo
           port: 9898
+      middlewares:
+        - name: strip-podinfo-prefix
     # This route allow to have access swagger resources from podinfo swagger
     - kind: Rule
-      match: HeaderRegexp(`Referer`, `https?://localhost/podinfo/swagger/.*`) && PathPrefix(`/swagger`)
+      match: HeaderRegexp(`Referer`, `https?://.*localhost(:[0-9]+)?/podinfo/swagger/.*`)
+      services:
+        - kind: Service
+          name: podinfo
+          port: 9898
+      middlewares:
+        - name: strip-podinfo-prefix
+    # This route allow to access the podinfo service via http://podinfo.traefik.kind
+    - kind: Rule
+      match: Host(`podinfo.traefik.kind`)
       services:
         - kind: Service
           name: podinfo
