@@ -74,10 +74,11 @@
 <li>Flux webhook - <a href="http://flux-webhook.traefik.minikube.localhost/" target="_blank" rel="noopener">http://flux-webhook.traefik.minikube.localhost/ (that works only with POST method, you can try this to notify flux to reconciliate: <code>curl -sSf -X POST "http://flux-webhook.traefik.minikube.localhost/hook/254ac6f85aab9ac284f9990b5349623be0c3471ff894abc568dc28d3419cd49e" -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"events": []}') </code></a></li>
 </ul>
 <p><strong>Access to minikube cluster, to be opened in browser through WSL</strong></p>
-<p>You can run the minikube traefik flux playground with the following command: <code>./start.sh --minikube --minikube-addons "ingress ingress-dns" --minikube-dns --flux-path k8s/flux-playground/traefik-minikube --docker-services gitea,dnsmasq</code></p>
+<p>You can run the minikube traefik flux playground with the following command: <code>./start.sh --minikube --minikube-addons "ingress ingress-dns" --minikube-dns --minikube-domain my-domain.home.com --flux-path k8s/flux-playground/traefik-minikube --docker-services gitea,dnsmasq</code></p>
 <ul>
 <li>Traefik dashboard - <a href="http://dashboard.traefik.minikube/" target="_blank" rel="noopener">http://dashboard.traefik.minikube/</a></li>
-<li>Whoami - <a href="http://whoami.traefik.minikube/" target="_blank" rel="noopener">http://whoami.traefik.minikube/</a></li>
+<li>Whoami - <a href="http://whoami.traefik.minikube/" target="_blank" rel="noopener">http://whoami.traefik.minikube/</a> - <a href="http://whoami.my-domain.home.com/" target="_blank" rel="noopener">http://whoami.my-domain.home.com/</a> - <code>curl http://whoami.my-domain.home.com</code></li>
+<li>Podinfo - <a href="http://podinfo.traefik.minikube/" target="_blank" rel="noopener">http://podinfo.traefik.minikube/</a> - <a href="http://podinfo.my-domain.home.com/" target="_blank" rel="noopener">http://podinfo.my-domain.home.com/</a> - <code>curl http://podinfo.my-domain.home.com/version</code></li>
 </ul>
 <p style="text-align: left;"></p>
 <h2 style="text-align: left;"><strong>Troubleshooting</strong></h2>

@@ -137,6 +137,15 @@ RUN if test $ARGOCD_INSTALL -eq 1; then \
   ; fi
 
 ##################### Specific to dev container #####################
+
+RUN DEBIAN_FRONTEND=noninteractive \
+  apt update \
+  && curl -sSLO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+  && sudo apt install -y ./google-chrome-stable_current_amd64.deb \
+  && rm -f ./google-chrome-stable_current_amd64.deb \
+  && apt clean
+
+
 ENV HOSTNAME=DevContainer
 USER $USERNAME
 

@@ -27,6 +27,7 @@ gcloud auth application-default login --project <project id>
 
 secret-handler --project project gcp --gcp-project <project id> list --secrets cluster external
 secret-handler --project project gcp --gcp-project <project id> create --secrets cluster external
+secret-handler --project project gcp --gcp-project <project id> initialize --secrets cluster external
 secret-handler --project project gcp --gcp-project <project id> details --secrets cluster external
 secret-handler --project project gcp --gcp-project <project id> import --secrets cluster external
 secret-handler --project project gcp --gcp-project <project id> export --secrets cluster external
@@ -43,6 +44,7 @@ aws configure
 
 secret-handler --project project aws --aws-region eu-west-1 list --secrets cluster external
 secret-handler --project project aws --aws-region eu-west-1 create --secrets cluster external
+secret-handler --project project aws --aws-region eu-west-1 initialize --secrets cluster external
 secret-handler --project project aws --aws-region eu-west-1 details --secrets cluster external
 secret-handler --project project aws --aws-region eu-west-1 import --secrets cluster external
 secret-handler --project project aws --aws-region eu-west-1 export --secrets cluster external

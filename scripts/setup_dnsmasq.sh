@@ -96,6 +96,9 @@ setup_dnsmasq() {
   # shellcheck source=../k8s/podinfo/setup_podinfo.sh
   . "$GIT_ROOT"/k8s/podinfo/setup_podinfo.sh
   install_podinfo_with_kubectl || exit_error "Unable to install podinfo"
+  if [ -n "$CLUSTER_DOMAIN" ] && [ ! "$CLUSTER_DOMAIN" = "minikube" ]; then
+    kubectl --namespace info create ingress --class nginx --rule "podinfo.$CLUSTER_DOMAIN/*=podinfo:9898" --dry-run=client -o yaml podinfo-domain | kubectl apply -f -
+  fi
 
   log_info "Checking resolution of podinfo.${CLUSTER_DOMAIN}"
   run_command_hide nslookup podinfo."${CLUSTER_DOMAIN}" || exit_error "Unable to resolve podinfo.${CLUSTER_DOMAIN}"

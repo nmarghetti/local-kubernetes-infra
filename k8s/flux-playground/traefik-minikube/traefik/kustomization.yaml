@@ -5,6 +5,7 @@ resources:
   - ../../../flux/base/crds/traefik
   - ../../../flux/base/helm-repositories/traefik
   - ../../../flux/base/infrastructure/traefik-minikube
+  - ingress.yaml
 patches:
   - target:
       group: helm.toolkit.fluxcd.io

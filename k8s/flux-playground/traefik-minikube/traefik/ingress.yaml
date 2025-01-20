@@ -1,0 +1,21 @@
+---
+# This is the main nginx ingress to redirect everything under *.my-domain.home.com to the traefik service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-domain
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: '*.my-domain.home.com'
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik
+                port:
+                  number: 8080

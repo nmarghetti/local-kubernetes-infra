@@ -4,6 +4,7 @@ import os
 import argparse
 import json
 import subprocess
+import traceback
 import yaml
 
 from typing import List
@@ -26,7 +27,8 @@ def build_secret_id(secret, args):
 
 
 def build_secret_path(args):
-    secret_path = f"{args.secret_path.replace('{provider}', args.provider)}/{args.project}{args.secret_suffix}"
+    secret_path = f"{args.secret_path.replace(
+        '{provider}', args.provider)}/{args.project}{args.secret_suffix}"
     if args.provider == "aws":
         return f"{secret_path}/{args.aws_region}"
     elif args.provider == "gcp":
@@ -41,6 +43,22 @@ def build_fake_store_path(args):
 
 def build_fake_store_filename(args):
     return f"{args.project}{args.secret_suffix}.yaml"
+
+
+def init_secrets(args):
+    secret_path = build_secret_path(args)
+    os.makedirs(build_secret_path(args), exist_ok=True)
+    for secret in args.secrets:
+        secret_id = build_secret_id(secret, args)
+        secret_content = "{}"
+        secret_extension = "json"
+        if secret in args.yaml_secrets:
+            secret_content = ""
+            secret_extension = "yaml"
+        secret_file = f"{secret_path}/{secret}.{secret_extension}"
+        with open(secret_file, "w", encoding="utf8") as file:
+            file.write(secret_content)
+        print(f"Initializing secret {secret_id} into {secret_file}")
 
 
 def import_secrets(args):
@@ -160,7 +178,8 @@ def details_secrets(args):
 
 def delete_secret_version(args):
     secret_manager = get_secret_manager(args)
-    secret_manager.delete_version(build_secret_id(args.secret_name, args), args.version)
+    secret_manager.delete_version(build_secret_id(
+        args.secret_name, args), args.version)
 
 
 def diff_secrets(args):
@@ -170,14 +189,16 @@ def diff_secrets(args):
     compare_version = args.compare_version
     for secret in args.secrets:
         print(
-            f"Comparing secret {secret} version {version} with version {compare_version}"
+            f"Comparing secret {secret} version {
+                version} with version {compare_version}"
         )
         secret_id = build_secret_id(secret, args)
         if not secret_manager.secret_exists(secret_id):
             raise ValueError(f"Secret '{secret_id}' does not exist")
         secret_content = secret_manager.access_secret(secret_id, version)
         secret_extension = "yaml" if secret in args.yaml_secrets else "json"
-        compare_secret_file = f"{secret_path}/{secret}.{version}.{secret_extension}"
+        compare_secret_file = f"{
+            secret_path}/{secret}.{version}.{secret_extension}"
         if secret in args.yaml_secrets:
             secret_content = yaml.dump(
                 json.loads(secret_content),
@@ -190,8 +211,10 @@ def diff_secrets(args):
 
         secret_file = f"{secret_path}/{secret}.{secret_extension}"
         if compare_version != "local":
-            secret_file = f"{secret_path}/{secret}.{compare_version}.{secret_extension}"
-            secret_content = secret_manager.access_secret(secret_id, compare_version)
+            secret_file = f"{
+                secret_path}/{secret}.{compare_version}.{secret_extension}"
+            secret_content = secret_manager.access_secret(
+                secret_id, compare_version)
             if secret in args.yaml_secrets:
                 secret_content = yaml.dump(
                     json.loads(secret_content),
@@ -236,13 +259,16 @@ def main() -> None:
     # create the top-level parser
     parser = argparse.ArgumentParser(
         prog="aws-secret-handler",
-        description="""Tool to create/import/export/list/diff/delete secrets from/to AWS/GCP Secret Manager and generate fake store manifest for testing""",
+        description="""Tool to create/initialize/import/export/list/diff/delete secrets from/to AWS/GCP Secret Manager and generate fake store manifest for testing""",
         epilog="""
 Examples:
   - secret-handler --project=project --secret-suffix=-test aws --help
   - secret-handler --project=project --secret-suffix=-test gcp --help
     """,
         formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument(
+        "-d", "--debug", action="store_true", help="Enable debug mode"
     )
     parser.add_argument(
         "--secret-path",
@@ -270,7 +296,8 @@ Examples:
         help="Secret suffix to use in the secret manager (default=-test)",
     )
 
-    provider_subparsers = parser.add_subparsers(title="provider", help="provider help")
+    provider_subparsers = parser.add_subparsers(
+        title="provider", help="provider help")
 
     # AWS provider
     aws_provider_parser = provider_subparsers.add_parser(
@@ -280,6 +307,7 @@ Examples:
         epilog="""
 Examples:
   - secret-handler aws --region eu-west-1 create --secrets application cluster external
+  - secret-handler aws --region eu-west-1 initialize --secrets application cluster external
   - secret-handler aws --region eu-west-1 import --secrets application cluster external
   - secret-handler aws --region eu-west-1 export --secrets application cluster external
   - secret-handler aws --region eu-west-1 fake --secrets application cluster external
@@ -307,6 +335,7 @@ Examples:
         epilog="""
 Examples:
   - secret-handler gcp --gcp-project project create --secrets application cluster external
+  - secret-handler gcp --gcp-project project initialize --secrets application cluster external
   - secret-handler gcp --gcp-project project import --secrets application cluster external
   - secret-handler gcp --gcp-project project export --secrets application cluster external
   - secret-handler gcp --gcp-project project fake --secrets application cluster external
@@ -335,7 +364,7 @@ Examples:
         create_parser = subparsers.add_parser(
             "create",
             help="Create new secrets",
-            description="Create nes secrets",
+            description="Create new secrets",
             epilog="""
 Examples:
   - secret-handler [option,...] <provider> [provider_option,...] create --secrets application cluster external
@@ -344,6 +373,20 @@ Examples:
         )
         create_parser.set_defaults(func=create_secrets)
         add_common_args(create_parser)
+
+        # Initialize
+        initialize_parser = subparsers.add_parser(
+            "initialize",
+            help="Simply create empty secrets file locally (to be done when there is no secret version yet)",
+            description="Simply create empty secrets file locally (to be done when there is no secret version yet)",
+            epilog="""
+Examples:
+  - secret-handler [option,...] <provider> [provider_option,...] initialize --secrets application cluster external
+    """,
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
+        initialize_parser.set_defaults(func=init_secrets)
+        add_common_args(initialize_parser)
 
         # Import
         import_parser = subparsers.add_parser(
@@ -468,7 +511,14 @@ Examples:
     args = parser.parse_args()
     # print(args)
     if "func" in args:
-        args.func(args)
+        if args.debug:
+            args.func(args)
+        else:
+            try:
+                args.func(args)
+            except Exception as e:
+                print(f"Error: {e}")
+                exit(1)
     else:
         parser.print_help()
 

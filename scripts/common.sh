@@ -44,19 +44,33 @@ log_error() {
   printf "${RED}%s${NC}\n" "$(get_log "$*")" >&2
 }
 
+exit_error() {
+  log_error "$@" >&2
+  exit 1
+}
+
+# Simply display the command and run it
+# run_command echo "Hello World" # --> output: "Hello World"
 run_command() {
-  [ "$DEBUG" = '1' ] && log_command "$@"
+  local prefix=
+  [ "$run_command_is_piped" = '1' ] && prefix=' | '
+  [ "$DEBUG" = '1' ] && log_command "${prefix}$*"
   "$@" || {
     status=$?
     log_error "[ERROR] The following command failed with status $status:" && log_command "$*"
     [ "$EXIT_ON_ERROR" = '1' ] && exit $status
+    return $status
   }
 }
 
+# Display the command, run it and hide its output but display it in case of error
+# run_command_hide echo "Hello World" # --> no output
+# run_command_hide cat "Hello World" # --> output: An error saying that file "Hello World" does not exist
 run_command_hide() {
   local command_output
   command_output=$(mktemp)
-  trap "rm -f $command_output" INT TERM HUP EXIT
+  # shellcheck disable=SC2064
+  trap "rm -f '$command_output'" INT TERM HUP EXIT
 
   [ "$DEBUG" = '1' ] && log_command "$@"
   "$@" &>"$command_output" || {
@@ -64,26 +78,42 @@ run_command_hide() {
     log_error "[ERROR] The following command failed with status $status:" && log_command "$*"
     cat "$command_output" >&2
     [ "$EXIT_ON_ERROR" = '1' ] && exit $status
+    return $status
   }
 }
 
-run_command_piped() {
+# Similar to run_command but with eval
+# it allows to run command starting with !, variables or any valid shell
+run_command_eval() {
+  local prefix=
+  [ "$run_command_is_piped" = '1' ] && prefix=' | '
   local command_output
   command_output=$(mktemp)
-  trap "rm -f $command_output" INT TERM HUP EXIT
+  # shellcheck disable=SC2064
+  trap "rm -f '$command_output'" INT TERM HUP EXIT
 
-  [ "$DEBUG" = '1' ] && log_command "$@"
+  [ "$DEBUG" = '1' ] && log_command "${prefix}$*"
   eval "$*" &>"$command_output" || {
     status=$?
     log_error "[ERROR] The following command failed with status $status:" && log_command "$*"
     cat "$command_output" >&2
     [ "$EXIT_ON_ERROR" = '1' ] && exit $status
+    return $status
   }
 }
 
-exit_error() {
-  log_error "$@" >&2
-  exit 1
+# Specify the command is piped so run_command will add ' | ' while logging the command
+# eg. run_command echo "Hello world" | run_command_piped grep -i "hello" will output:
+#  echo Hello world
+#  |  grep -i hello
+run_command_piped() {
+  run_command_is_piped=1 run_command "$@"
+}
+
+# Similar to run_command_piped but with eval
+# it allows to run command starting with !, variables or any valid shell
+run_command_piped_eval() {
+  run_command_is_piped=1 run_command_eval "$@"
 }
 
 export CERT_PATH=./docker-compose/docker/certificates
@@ -96,7 +126,7 @@ if type git >/dev/null 2>&1; then
 fi
 
 usage() {
-  cat <<EOM
+  cat <<EOM >&2
 Usage: $0 [options]
 
 Options:
@@ -107,6 +137,7 @@ Options:
     --minikube                            : setup minikube
     --minikube-addons <addon [addon...]>  : enable minikube addons eg. ingress,ingress-dns
     --minikube-dns                        : setup dnsmasq to resolve minikube domain
+    --minikube-domain <domain>            : set minikube domain (default: minikube)
     --minikube-dashboard                  : start minikube dashboard
     --kind                                : setup kind
     --kind-port <port>                    : port on which kind listens for http (defaut 8880)
@@ -171,6 +202,7 @@ parse_args() {
   argocd_path=""
   use_dnsmasq=0
   minikube_addons=
+  minikube_domain=minikube
   docker_services=portainer
   NGINX_LOG_LEVEL=info
   TRAEFIK_LOG_LEVEL=info
@@ -210,6 +242,10 @@ parse_args() {
           dkd) use_dkd=1 ;;
           gitea-webhook) GITEA_SET_WEBHOOK=1 ;;
           minikube-dns) use_dnsmasq=1 ;;
+          minikube-domain)
+            minikube_domain="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
           minikube-addons)
             minikube_addons="${!OPTIND}"
             OPTIND=$((OPTIND + 1))
@@ -274,6 +310,7 @@ parse_args() {
   export use_ssl
   export use_minikube
   export start_minikube_dashboard
+  export minikube_domain
   export minikube_addons
   export use_kind
   export KIND_HTTP_PORT

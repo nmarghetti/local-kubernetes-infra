@@ -6,7 +6,7 @@ compute_minikube_access() {
   MINIKUBE_DASHBOARD_PORT=${MINIKUBE_DASHBOARD_PORT:-8083}
   # DOCKER_COMPOSE_HOST=host.minikube.internal
   DOCKER_COMPOSE_HOST=host.local-cluster.internal
-  CLUSTER_DOMAIN=minikube
+  CLUSTER_DOMAIN=$minikube_domain
   CLUSTER_CONTEXT=minikube
   export HOST_IP
   export MINIKUBE_DASHBOARD_PORT
