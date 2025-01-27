@@ -1,0 +1,3 @@
+[submodule "cloud-secret-manager"]
+	path = cloud-secret-manager
+	url = https://github.com/nmarghetti/cloud-secret-manager.git

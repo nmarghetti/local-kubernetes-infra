@@ -5,28 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "aws-secret-handler list",
+      "name": "AWS secret-manager list",
       "type": "debugpy",
-      "python": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/python",
-      "program": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/aws-secret-handler",
+      "python": "${workspaceFolder}/cloud-secret-manager/.venv/bin/python",
+      "program": "${workspaceFolder}/cloud-secret-manager/.venv/bin/secret-manager",
       "request": "launch",
-      "args": ["--region", "eu-west-1", "--project", "project", "list", "--secrets", "cluster"]
-    },
-    {
-      "name": "aws-secret-handler export",
-      "type": "debugpy",
-      "python": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/python",
-      "program": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/aws-secret-handler",
-      "request": "launch",
-      "args": ["--region", "eu-west-1", "--project", "project", "export", "--secrets", "cluster"]
-    },
-    {
-      "name": "aws-secret-handler diff",
-      "type": "debugpy",
-      "python": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/python",
-      "program": "${workspaceFolder}/secret-vault/aws-secret-handler/.venv/bin/aws-secret-handler",
-      "request": "launch",
-      "args": ["--region", "eu-west-1", "--project", "project", "diff", "--secrets", "cluster"]
+      "args": ["--project", "project", "aws", "--aws-region", "eu-west-1", "list", "--secrets", "cluster"]
     },
     {
       "type": "bashdb",

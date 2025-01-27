@@ -7,10 +7,10 @@
 aws configure
 
 # Create external-secrets-project-test-external in eu-west-1 region
-./secret-vault/init_secret_handlers.sh
-poetry -C ./secret-vault/secret-handler shell
-secret-handler --project project aws --aws-region eu-west-1 create --secrets external
-secret-handler --project project aws --aws-region eu-west-1 import --secrets external
+./cloud-secret-manager/init_secret_manager.sh
+poetry -C ./cloud-secret-manager shell
+secret-manager --project project aws --aws-region eu-west-1 create --secrets external
+secret-manager --project project aws --aws-region eu-west-1 import --secrets external
 cat <<EOM >./secret-vault/.secrets/aws/project-test/eu-west-1/external.json
 {
   "google": {
@@ -29,7 +29,7 @@ cat <<EOM >./secret-vault/.secrets/aws/project-test/eu-west-1/external.json
   }
 }
 EOM
-secret-handler --project project aws --aws-region eu-west-1 export --secrets external
+secret-manager --project project aws --aws-region eu-west-1 export --secrets external
 ```
 
 ## Playground
