@@ -89,7 +89,7 @@ setup_dnsmasq() {
   kubectl rollout status -n ingress-nginx deployment ingress-nginx-controller || exit_error "nginx ingress controller is not ready"
   # Delete info namespace if it exists but there is no ingress for podinfo
   if kubectl get namespace info &>/dev/null; then
-    if ! kubectl get -n info ingress minikube-podinfo &>/dev/null; then
+    if ! kubectl get -n info ingress podinfo-minikube &>/dev/null; then
       kubectl delete namespace info
     fi
   fi
@@ -98,6 +98,26 @@ setup_dnsmasq() {
   install_podinfo_with_kubectl || exit_error "Unable to install podinfo"
   if [ -n "$CLUSTER_DOMAIN" ] && [ ! "$CLUSTER_DOMAIN" = "minikube" ]; then
     kubectl --namespace info create ingress --class nginx --rule "podinfo.$CLUSTER_DOMAIN/*=podinfo:9898" --dry-run=client -o yaml podinfo-domain | kubectl apply -f -
+    cat <<EOM | kubectl apply -f -
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  name: podinfo
+  namespace: info
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host($(printf '`podinfo-traefik.%s`' ${CLUSTER_DOMAIN}))
+      services:
+        - kind: Service
+          name: podinfo
+          port: 9898
+EOM
   fi
 
   log_info "Checking resolution of podinfo.${CLUSTER_DOMAIN}"
