@@ -57,11 +57,19 @@ setup_dnsmasq() {
   fi
   local dns_server
   dns_server=$(grep nameserver /etc/resolv.conf | grep -v 127.0.0.1 | head -1 | awk '{ print $2 }')
+  # Override dhcp-option
   if grep -qE "^dhcp-option=" docker-compose/docker/dnsmasq/dnsmasq.conf; then
     run_command sed -i -re "s#^dhcp-option=.*\$#dhcp-option=6,$dns_server#" docker-compose/docker/dnsmasq/dnsmasq.conf
   else
     log_command "echo dhcp-option=6,$dns_server >>docker-compose/docker/dnsmasq/dnsmasq.conf"
     echo "dhcp-option=6,$dns_server" >>docker-compose/docker/dnsmasq/dnsmasq.conf
+  fi
+  # Override default dns
+  if grep -qE "^server=[0-9]" docker-compose/docker/dnsmasq/dnsmasq.conf; then
+    run_command sed -i -re "s#^server=[0-9].*\$#server=$dns_server#" docker-compose/docker/dnsmasq/dnsmasq.conf
+  else
+    log_command "echo server=$dns_server >>docker-compose/docker/dnsmasq/dnsmasq.conf"
+    echo "server=$dns_server" >>docker-compose/docker/dnsmasq/dnsmasq.conf
   fi
   code=$(run_command curl "${dnsmasq_curl_args[@]}" -sS -o "$tmp_file_output" -w "%{http_code}" "$dnsmasq_url"/save --data-raw "$(printf '{"/etc/dnsmasq.conf": "%s"}' "$(sed -zre "s#\n#\\\\n#g" docker-compose/docker/dnsmasq/dnsmasq.conf)")")
   if [ "$code" -eq 200 ]; then

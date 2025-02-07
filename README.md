@@ -23,6 +23,9 @@
 
    ```shell
    openssl s_client -connect google.com:443 </dev/null
+   # Show all certificates in chain
+   openssl s_client -connect google.com:443 -showcerts 2>/dev/null </dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >./bundle.crt
+   openssl storeutl -noout -text -certs ./bundle.crt
    ```
 
 1. Exercices
@@ -192,4 +195,3 @@ curl -H 'Host: k8s.localhost' https://localhost:30000/version
 1. Certificates errors on websites under WSL
 
    Add your certificates in you web browser trusted Authorities.
-

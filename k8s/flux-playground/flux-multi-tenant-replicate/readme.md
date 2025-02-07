@@ -18,3 +18,9 @@ flux get kustomization -A
 ```
 
 Check this link to create flux tenant: <https://fluxcd.io/flux/cmd/flux_create_tenant/>.
+
+To create the tenants:
+
+```shell
+./scripts/flux_setup_tenants.sh k8s/flux-playground/flux-multi-tenant-replicate/tenants.json
+```
