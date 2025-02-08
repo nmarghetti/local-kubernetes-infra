@@ -90,6 +90,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - $HOME/.ssh:/root/.ssh
       - ./docker/gitea/setup.sh:/app/setup.sh
+      - ../scripts/utils/log.sh:/app/scripts/utils/log.sh
       - ../scripts/common.sh:/app/scripts/common.sh
       - ../scripts/setup_gitea.sh:/app/scripts/setup_gitea.sh
 
@@ -113,7 +114,6 @@ services:
       DISABLE_REGISTRATION: true
       DB_TYPE: sqlite3
     labels:
-      - traefik.enable=true
       - traefik.enable=true
       - traefik.http.routers.gitea.rule=Host(`gitea.docker.localhost`)
       - traefik.http.services.gitea.loadbalancer.server.port=3000
@@ -164,6 +164,7 @@ services:
         condition: service_started
     volumes:
       - ./docker/portainer/setup.sh:/app/setup.sh
+      - ../scripts/utils/log.sh:/app/scripts/utils/log.sh
       - ../scripts/common.sh:/app/scripts/common.sh
       - ../scripts/setup_portainer.sh:/app/scripts/setup_portainer.sh
 

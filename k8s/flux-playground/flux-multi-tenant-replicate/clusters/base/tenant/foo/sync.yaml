@@ -11,7 +11,7 @@ spec:
     branch: main
   secretRef:
     name: flux-system
-  url: ssh://git@local_cluster:222/gitadmin/local_cluster.git
+  url: ssh://git@host.local-cluster.internal:222/gitadmin/local_cluster.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -26,3 +26,8 @@ spec:
   sourceRef:
     kind: GitRepository
     name: team-foo
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-vars
+        optional: false

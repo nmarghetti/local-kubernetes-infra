@@ -17,6 +17,13 @@ patches:
           kind: ServiceAccount
           name: team-foo
           namespace: foo
+  - patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: foo-infra
+        labels:
+          project: foo
   - target:
       kind: RoleBinding
       name: team-foo-reconciler
@@ -28,6 +35,13 @@ patches:
           kind: ServiceAccount
           name: team-foo
           namespace: foo
+  - patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: foo-app
+        labels:
+          project: foo
   - target:
       kind: RoleBinding
       name: team-foo-reconciler
@@ -39,3 +53,10 @@ patches:
           kind: ServiceAccount
           name: team-foo
           namespace: foo
+  - patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: foo-kind
+        labels:
+          project: foo

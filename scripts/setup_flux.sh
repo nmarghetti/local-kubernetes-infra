@@ -144,13 +144,22 @@ setup_flux() {
         bootstrap_params+=('--allow-insecure-http')
       fi
     fi
-    run_command flux bootstrap git "${bootstrap_params[@]}" --url="$gitea_repo_url" < <(echo "$bootstrap_intput")
-    run_command git fetch --prune gitea
-    if [ "$(git diff --stat main..gitea/main | wc -l)" -ne 0 ]; then
-      run_command git pull --rebase gitea main
+    if [ "$flux_bootstrap" -eq 1 ]; then
+      run_command flux bootstrap git "${bootstrap_params[@]}" --url="$gitea_repo_url" < <(echo "$bootstrap_intput")
+      run_command git fetch --prune gitea
+      if [ "$(git diff --stat main..gitea/main | wc -l)" -ne 0 ]; then
+        run_command git pull --rebase gitea main
+      fi
+      # Use existing manifest in flux/base/flux-system
+      "$GIT_ROOT"/scripts/flux_migrate.sh --flux-path "$flux_path" || exit_error "Unable to migrate flux"
+    elif [ "$flux_auth" = 'ssh' ]; then
+      run_command flux create secret git flux-system --url=ssh://"$DOCKER_COMPOSE_HOST":222 --private-key-file="$HOME"/.ssh/id_rsa
+      # Needs to be ran twice to avoid error
+      run_command_nerr kubectl apply -k "$flux_path"/flux-system || run_command kubectl apply -k "$flux_path"/flux-system
+      run_command flux reconcile -n flux-system kustomization flux-system --with-source
+    else
+      exit_error "Unsupported way to start flux"
     fi
-    # Use existing manifest in flux/base/flux-system
-    "$GIT_ROOT"/scripts/flux_migrate.sh --flux-path "$flux_path" || exit_error "Unable to migrate flux"
   fi
 
   [ "$(kubectl get -n flux-system deployments.apps source-controller -o json | jq '.status.conditions[0].status' | xargs printf "%s")" = "True" ] || exit_error "Unable to start flux"

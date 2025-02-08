@@ -20,6 +20,8 @@ SCRIPTS=$(git rev-parse --show-toplevel)/scripts
 . "$SCRIPTS"/setup_minikube.sh
 # shellcheck source=scripts/setup_kind.sh
 . "$SCRIPTS"/setup_kind.sh
+# shellcheck source=scripts/setup_kubectl_user_context.sh
+. "$SCRIPTS"/setup_kubectl_user_context.sh
 # shellcheck source=scripts/setup_flux.sh
 . "$SCRIPTS"/setup_flux.sh
 # shellcheck source=scripts/setup_argocd.sh

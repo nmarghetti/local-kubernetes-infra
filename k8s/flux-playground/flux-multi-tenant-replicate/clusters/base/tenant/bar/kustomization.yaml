@@ -5,3 +5,11 @@ namespace: bar
 resources:
   - rbac.yaml
   - sync.yaml
+patches:
+  - patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: bar
+        labels:
+          project: bar

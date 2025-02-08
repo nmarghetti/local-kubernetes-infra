@@ -98,6 +98,9 @@ setup_minikube() {
         run_command docker restart traefik >/dev/null || exit_error "Unable to restart traefik service"
       fi
     fi
+
+    # Create user context for minikube cluster
+    setup_kubectl_user_context
   fi
   [ "$(minikube status -o json | jq .APIServer | xargs printf "%s")" = "Running" ] || exit_error "Unable to start local cluster"
 
@@ -172,6 +175,8 @@ if [ "$(basename "$0")" = "setup_minikube.sh" ] || ! (return 0 2>/dev/null); the
   . "$SCRIPTS"/common.sh
   # shellcheck source=./setup_docker_compose_services.sh
   . "$SCRIPTS"/setup_docker_compose_services.sh
+  # shellcheck source=./setup_kubectl_user_context.sh
+  . "$SCRIPTS"/setup_kubectl_user_context.sh
 
   cd "$GIT_ROOT" || exit_error "Unable to go to git root folder"
 

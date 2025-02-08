@@ -96,6 +96,8 @@ shift $((OPTIND - 1))
   exit 1
 }
 
+[ "$DEBUG_FULL" -eq 1 ] && set -x
+
 export TRAEFIK_PORT=30000
 export PORTAINER_PORT=30001
 export GITEA_PORT=30002
@@ -207,8 +209,8 @@ EOM
 
   typeset -i cpt=0
   : >./tmp/localarch.log
-  # wait 5min for minikube to be up and running
-  while [ $cpt -lt 30 ] && ! docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version' &>>./tmp/localarch.log; do
+  # wait 10min for minikube to be up and running
+  while [ $cpt -lt 60 ] && ! docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version' &>>./tmp/localarch.log; do
     printf '.'
     sleep 10
     cpt+=1
@@ -227,8 +229,9 @@ EOM
     sudo update-ca-certificates -f
 
   # Retrieve the minikube kubeconfig file
-  docker exec -ti localarch cat /app/tmp/minikube_kubeconfig.yaml | yq -o json | jq '.clusters[0].name |= "minikube_localarch" | .contexts[0].name |= "minikube_localarch" | .contexts[0].context.cluster |= "minikube_localarch" | .contexts[0].context.user |= "minikube_localarch" | .users[0].name |= "minikube_localarch"' | yq 'del(.current-context)' | yq -P >./tmp/minikube_localarch_kubeconfig.yaml
+  docker exec -ti localarch cat tmp/minikube_kubeconfig.yaml | yq -o json | jq '.clusters[0].name |= "minikube_localarch" | .contexts[0].name |= "minikube_localarch" | .contexts[0].context.cluster |= "minikube_localarch" | .contexts[0].context.user |= "minikube_localarch" | .users[0].name |= "minikube_localarch"' | yq 'del(.current-context)' | yq -P >./tmp/minikube_localarch_kubeconfig.yaml
   yq -i 'del(.clusters[0].cluster.certificate-authority-data) | del(.users[0].user)' ./tmp/minikube_localarch_kubeconfig.yaml
+  docker exec -ti localarch cat tmp/"minikube-${USER}_nginx_kubeconfig.yaml" | yq -o json | jq '.clusters[0].name |= "minikube_localarch-'"${USER}"'" | .contexts[0].name |= "minikube_localarch-'"${USER}"'" | .contexts[0].context.cluster |= "minikube_localarch-'"${USER}"'"' | yq 'del(.current-context)' | yq -P >./tmp/minikube_localarch-"${USER}"_kubeconfig.yaml
 
   cat <<EOM
 

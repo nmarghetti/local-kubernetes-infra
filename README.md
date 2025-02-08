@@ -1,5 +1,19 @@
 # Local kubernetes infrastructure
 
+## Init repository
+
+```shell
+# Init submodules
+git submodule update --init
+cd scripts/utils &&
+  for submodule in $(git submodule | awk '{ print $2 }'); do if [ -e "$submodule" ]; then git submodule deinit -f "$submodule"; fi; done &&
+  git sparse-checkout set --no-cone '/log.sh' &&
+  cd -
+
+# Upgrade submodules
+git submodule update --remote
+```
+
 ## Setup
 
 1. Prerequesites

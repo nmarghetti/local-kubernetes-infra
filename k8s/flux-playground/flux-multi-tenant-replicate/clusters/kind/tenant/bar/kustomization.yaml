@@ -22,7 +22,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/url
-        value: ssh://git@172.17.0.1:222/gitadmin/local_cluster.git
+        value: ssh://git@host.local-cluster.internal:222/gitadmin/local_cluster.git
       - op: replace
         path: /spec/ref/branch
         value: main

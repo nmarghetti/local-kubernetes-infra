@@ -5,3 +5,11 @@ namespace: foo
 resources:
   - rbac.yaml
   - sync.yaml
+patches:
+  - patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: foo
+        labels:
+          project: foo

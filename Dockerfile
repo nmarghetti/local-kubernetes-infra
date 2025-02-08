@@ -167,9 +167,6 @@ RUN "$WORKDIR"/scripts/setup_deps.sh
 
 WORKDIR "$WORKDIR"
 
-RUN sudo mkdir -p /app \
-  && sudo ln -s "$PWD"/docker_entrypoint.sh /app/docker_entrypoint.sh
-
 ENTRYPOINT [ "bash" ]
 
-CMD [ "/app/docker_entrypoint.sh" ]
+CMD [ "./docker_entrypoint.sh" ]

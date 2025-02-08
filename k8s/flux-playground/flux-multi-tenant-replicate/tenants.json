@@ -4,7 +4,8 @@
     {
       "name": "team-foo",
       "namespace": "foo",
-      "git_url": "ssh://git@local_cluster:222/gitadmin/local_cluster.git",
+      "namespace_labels": ["project: foo"],
+      "git_url": "ssh://git@host.local-cluster.internal:222/gitadmin/local_cluster.git",
       "git_path": "k8s/flux-playground/flux-multi-tenant-replicate/tenants/team-foo/clusters/${cluster_name}/flux-system",
       "extra_namespaces": ["foo-infra", "foo-app"],
       "extra_cluster_namespaces": {
@@ -15,11 +16,14 @@
     {
       "name": "team-bar",
       "namespace": "bar",
-      "git_url": "ssh://git@local_cluster:222/gitadmin/local_cluster.git",
+      "namespace_labels": ["project: bar"],
+      "git_url": "ssh://git@host.local-cluster.internal:222/gitadmin/local_cluster.git",
       "git_path": "k8s/flux-playground/flux-multi-tenant-replicate/tenants/team-bar/clusters/${cluster_name}",
       "extra_namespaces": []
     }
   ],
+  "cluster_config": "cluster-vars",
+  "cluster_config_optional": "false",
   "clusters": [
     {
       "name": "minikube",
@@ -30,7 +34,7 @@
     {
       "name": "kind",
       "path": "./clusters/kind",
-      "git_url": "ssh://git@172.17.0.1:222/gitadmin/local_cluster.git",
+      "git_url": "ssh://git@host.local-cluster.internal:222/gitadmin/local_cluster.git",
       "git_branch": "main"
     }
   ]

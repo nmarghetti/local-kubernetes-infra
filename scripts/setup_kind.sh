@@ -98,6 +98,9 @@ EOM
         run_command docker restart traefik >/dev/null || exit_error "Unable to restart traefik service"
       fi
     fi
+
+    # Create user context for kind cluster
+    setup_kubectl_user_context
   fi
   for node in $(kind get nodes); do
     # Ensure it is started
@@ -157,6 +160,8 @@ EOM
   . "$SCRIPTS"/common.sh
   # shellcheck source=./setup_docker_compose_services.sh
   . "$SCRIPTS"/setup_docker_compose_services.sh
+  # shellcheck source=./setup_kubectl_user_context.sh
+  . "$SCRIPTS"/setup_kubectl_user_context.sh
 
   cd "$GIT_ROOT" || exit_error "Unable to go to git root folder"
 

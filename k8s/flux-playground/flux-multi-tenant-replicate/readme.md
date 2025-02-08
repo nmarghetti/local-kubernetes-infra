@@ -17,6 +17,13 @@ You can then check the status of the kustomization:
 flux get kustomization -A
 ```
 
+You can apply some role to check RBACs and use [this kubeconfig](../../../tmp/minikube-user_kubeconfig.yaml).
+
+```shell
+# Add view RBACs to foo namespace
+kubectl create rolebinding team-foo-member-view-binding --role=foo-view --user="$USER" --namespace=foo --dry-run=client -o yaml | kubectl apply -f -
+```
+
 Check this link to create flux tenant: <https://fluxcd.io/flux/cmd/flux_create_tenant/>.
 
 To create the tenants:

@@ -1,129 +1,28 @@
 #! /bin/bash
 
-DEBUG=${DEBUG:-1}
-EXIT_ON_ERROR=${EXIT_ON_ERROR:-0}
-
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-GREY='\033[1;36m'
-NC='\033[0m' # No Color
-
-get_log() {
-  local data
-  if [ -n "$*" ]; then
-    # Read data from arguments
-    data="$*"
-  elif [ ! -t 0 ]; then
-    # Read data from stdin (pipe or <<EOM)
-    IFS= read -r data <&0
-  else
-    data="I dont know what is there to log..."
-  fi
-  printf "%s\n" "$data"
-}
-
-log_info() {
-  printf "${GREEN}%s${NC}\n" "$(get_log "$*")" >&2
-}
-
-log_debug() {
-  printf "${GREY}%s${NC}\n" "$(get_log "$*")" >&2
-}
-
-log_step() {
-  printf "${YELLOW}%s${NC}\n" "$(get_log "$*")" >&2
-}
-
-log_command() {
-  printf "${CYAN}%s${NC}\n" "$(get_log "$*")" >&2
-}
-
-log_error() {
-  printf "${RED}%s${NC}\n" "$(get_log "$*")" >&2
-}
-
-exit_error() {
-  log_error "$@" >&2
-  exit 1
-}
-
-# Simply display the command and run it
-# run_command echo "Hello World" # --> output: "Hello World"
-run_command() {
-  local prefix=
-  [ "$run_command_is_piped" = '1' ] && prefix=' | '
-  [ "$DEBUG" = '1' ] && log_command "${prefix}$*"
-  "$@" || {
-    status=$?
-    log_error "[ERROR] The following command failed with status $status:" && log_command "$*"
-    [ "$EXIT_ON_ERROR" = '1' ] && exit $status
-    return $status
-  }
-}
-
-# Display the command, run it and hide its output but display it in case of error
-# run_command_hide echo "Hello World" # --> no output
-# run_command_hide cat "Hello World" # --> output: An error saying that file "Hello World" does not exist
-run_command_hide() {
-  local command_output
-  command_output=$(mktemp)
-  # shellcheck disable=SC2064
-  trap "rm -f '$command_output'" INT TERM HUP EXIT
-
-  [ "$DEBUG" = '1' ] && log_command "$@"
-  "$@" &>"$command_output" || {
-    status=$?
-    log_error "[ERROR] The following command failed with status $status:" && log_command "$*"
-    cat "$command_output" >&2
-    [ "$EXIT_ON_ERROR" = '1' ] && exit $status
-    return $status
-  }
-}
-
-# Similar to run_command but with eval
-# it allows to run command starting with !, variables or any valid shell
-run_command_eval() {
-  local prefix=
-  [ "$run_command_is_piped" = '1' ] && prefix=' | '
-  local command_output
-  command_output=$(mktemp)
-  # shellcheck disable=SC2064
-  trap "rm -f '$command_output'" INT TERM HUP EXIT
-
-  [ "$DEBUG" = '1' ] && log_command "${prefix}$*"
-  eval "$*" &>"$command_output" || {
-    status=$?
-    log_error "[ERROR] The following command failed with status $status:" && log_command "$*"
-    cat "$command_output" >&2
-    [ "$EXIT_ON_ERROR" = '1' ] && exit $status
-    return $status
-  }
-}
-
-# Specify the command is piped so run_command will add ' | ' while logging the command
-# eg. run_command echo "Hello world" | run_command_piped grep -i "hello" will output:
-#  echo Hello world
-#  |  grep -i hello
-run_command_piped() {
-  run_command_is_piped=1 run_command "$@"
-}
-
-# Similar to run_command_piped but with eval
-# it allows to run command starting with !, variables or any valid shell
-run_command_piped_eval() {
-  run_command_is_piped=1 run_command_eval "$@"
-}
-
 export CERT_PATH=./docker-compose/docker/certificates
 
+GIT_ROOT=
 if type git >/dev/null 2>&1; then
   GIT_ROOT="$(git rev-parse --show-toplevel)"
   [ -n "$GIT_ROOT" ] || exit_error "Unable to retrieve the root of the git repository"
   # shellcheck source=../docker-compose/docker-compose.env
   [ -f "$GIT_ROOT"/docker-compose/docker-compose.env ] && . "$GIT_ROOT"/docker-compose/docker-compose.env
 fi
+
+log_file=
+if [ -n "$GIT_ROOT" ]; then
+  log_file="$GIT_ROOT"/scripts/utils/log.sh
+elif [[ -v "${BASH_SOURCE[0]}" ]]; then
+  log_file="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"/utils/log.sh
+fi
+if [ ! -f "$log_file" ]; then
+  echo "Unable to find log.sh" >&2
+  exit 1
+fi
+# shellcheck source=./utils/log.sh
+. "$log_file"
+unset log_file
 
 usage() {
   cat <<EOM >&2
@@ -149,6 +48,7 @@ Options:
     --dkd                                 : setup dkd image
     --gitea-webhook                       : setup gitea webhook to notify flux
     --flux-path <path>                    : select flux path amongs $(find ./k8s/flux-playground -maxdepth 2 -name "flux-system" | tr '\n' ',' | head -c -1)
+    --flux-boostrap                       : bootstrap flux instead of creating credentials and just applying the manifests
     --flux-auth <auth>                    : select auth type for flux amongs ssh, token, login (default: ssh)
     --flux-image-automation               : add flux component for image automation
     --flux-local-helm                     : use local helm registry (default: false)
@@ -197,6 +97,7 @@ parse_args() {
   flux_auth="ssh"
   flux_image_automation=0
   flux_local_helm=0
+  flux_bootstrap=0
   GITEA_SET_WEBHOOK=0
   use_argocd=0
   argocd_path=""
@@ -255,6 +156,7 @@ parse_args() {
             flux_path="${!OPTIND}"
             OPTIND=$((OPTIND + 1))
             ;;
+          flux-boostrap) flux_bootstrap=1 ;;
           flux-auth)
             flux_auth="${!OPTIND}"
             echo "$flux_auth" | grep -qFx -e ssh -e token -e login || exit_error "Invalid auth type for flux, should be ssh or token"
@@ -319,6 +221,7 @@ parse_args() {
   export use_dnsmasq
   export use_flux
   export flux_path
+  export flux_bootstrap
   export flux_auth
   export flux_image_automation
   export flux_local_helm
