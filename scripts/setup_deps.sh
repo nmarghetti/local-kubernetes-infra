@@ -14,15 +14,16 @@ install_deps() {
     ! type "$dep" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install $dep"
   done
 
-  ! type "gpg" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install gnupg"
-  ! type "envsubst" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install gettext"
-  ! type "netcat" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install netcat-openbsd"
-  ! type "netstat" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install net-tools"
-  ! type "ip" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install iproute2"
-  ! type "sponge" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install moreutils"
-  ! type "htpasswd" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install apache2-utils"
-  ! type "nslookup" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install dnsutils"
-  ! type "ping" >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install iputils-ping"
+  ! type lsb_release >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install software-properties-common"
+  ! type gpg >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install gnupg"
+  ! type envsubst >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install gettext"
+  ! type netcat >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install netcat-openbsd"
+  ! type netstat >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install net-tools"
+  ! type ip >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install iproute2"
+  ! type sponge >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install moreutils"
+  ! type htpasswd >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install apache2-utils"
+  ! type nslookup >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install dnsutils"
+  ! type ping >/dev/null 2>&1 && dependencies_to_install="$dependencies_to_install iputils-ping"
 
   [ -n "$dependencies_to_install" ] && {
     log_step "Installing dependencies: $dependencies_to_install"
@@ -177,6 +178,19 @@ install_k9s() {
   type k9s >/dev/null 2>&1 || return 1
 }
 
+install_terraform() {
+  log_info "Checking terraform"
+  if ! type terraform >/dev/null 2>&1; then
+    wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg >/dev/null &&
+      gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint &&
+      echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list &&
+      sudo apt update &&
+      sudo apt-get install terraform &&
+      terraform -install-autocomplete
+  fi
+  type terraform >/dev/null 2>&1 || return 1
+}
+
 setup_deps() {
   install_deps || exit_error "Unable to install dependencies"
   install_yq || exit_error "Unable to install yq"
@@ -189,6 +203,7 @@ setup_deps() {
   install_k9s || exit_error "Unable to install k9s"
   install_flux || exit_error "Unable to install flux"
   install_argocd || exit_error "Unable to install argocd"
+  install_terraform || exit_error "Unable to install terraform"
 }
 
 # If the script is not being sourced, run the setup

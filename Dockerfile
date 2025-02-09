@@ -6,7 +6,7 @@ ARG UID=1000
 ENV USER=$USERNAME
 
 # apt packages
-ARG APT_PACKAGES="bash-completion curl jq git gitk gnupg gettext netcat-openbsd net-tools iproute2 moreutils apache2-utils dnsutils iputils-ping"
+ARG APT_PACKAGES="bash-completion curl jq git gitk software-properties-common gnupg gettext netcat-openbsd net-tools iproute2 moreutils apache2-utils dnsutils iputils-ping"
 # yq
 ARG YQ_INSTALL=1
 # mkcert
@@ -35,6 +35,8 @@ ARG KIND_VERSION=0.23.0
 # minikube
 ARG MINIKUBE_INSTALL=1
 ARG MINIKUBE_VERSION=1.35.0
+# terraform
+ARG TERRAFORM_INSTALL=1
 
 # Install sudo and root certificates
 RUN DEBIAN_FRONTEND=noninteractive \
@@ -134,6 +136,16 @@ RUN if test $ARGOCD_INSTALL -eq 1; then \
       && sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd \
       && rm argocd-linux-amd64 \
   ; fi
+
+# Install terraform
+RUN if test $TERRAFORM_INSTALL -eq 1; then \
+    curl -o - https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg >/dev/null \
+    && gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint \
+    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list \
+    && apt update \
+    && apt-get install terraform \
+    && terraform -install-autocomplete \
+; fi
 
 
 ARG WORKDIR=/app

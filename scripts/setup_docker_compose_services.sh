@@ -141,7 +141,7 @@ setup_docker_compose_services() {
   # If kind control plane not setup, lets check if kind is not up and we can get its ip
   KIND_CONTROL_PLANE_IP=${KIND_CONTROL_PLANE_IP:-}
   if [ -z "$KIND_CONTROL_PLANE_IP" ]; then
-    KIND_CONTROL_PLANE_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane) 2>/dev/null && export KIND_CONTROL_PLANE_IP
+    KIND_CONTROL_PLANE_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane 2>/dev/null) && export KIND_CONTROL_PLANE_IP
   fi
 
   # shellcheck disable=SC2086
