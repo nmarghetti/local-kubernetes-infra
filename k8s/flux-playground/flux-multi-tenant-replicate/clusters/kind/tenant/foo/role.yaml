@@ -50,6 +50,41 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: foo-view-secret
+  namespace: foo
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - secrets
+  - verbs:
+      - create
+    apiGroups:
+      - ''
+    resources:
+      - pods/exec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: foo-view-secret-rolebinding
+  namespace: foo
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: team-foo-member-view-secret
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: foo-view-secret
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: foo-read
   namespace: foo
 rules:
@@ -59,13 +94,38 @@ rules:
       - watch
     apiGroups:
       - ''
+    resources:
+      - bindings
+      - componentstatuses
+      - configmaps
+      - endpoints
+      - events
+      - limitranges
+      - namespaces
+      - nodes
+      - persistentvolumeclaims
+      - persistentvolumes
+      - pods
+      - podtemplates
+      - replicationcontrollers
+      - resourcequotas
+      - serviceaccounts
+      - services
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
       - helm.sh
       - apps
       - batch
+      - external-secrets.io
       - extensions
       - networking.k8s.io
       - policy
       - storage.k8s.io
+      - traefik.io
+      - helm.toolkit.fluxcd.io
     resources:
       - '*'
   - verbs:
@@ -73,7 +133,6 @@ rules:
     apiGroups:
       - ''
     resources:
-      - pods/exec
       - pods/portforward
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -89,3 +148,30 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: foo-read
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: foo-admin
+  namespace: foo
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - '*'
+    resources:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: foo-admin-rolebinding
+  namespace: foo
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: team-foo-member-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: foo-admin

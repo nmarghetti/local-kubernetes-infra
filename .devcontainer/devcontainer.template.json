@@ -10,12 +10,13 @@
   "mounts": [
     "source=bashhistory,target=/commandhistory,type=volume",
     // "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
-    "source=${localEnv:HOME}/.ssh,target=${localEnv:HOME}/.ssh,type=bind,consistency=cached"
+    "source=${localEnv:HOME}/.ssh,target=${localEnv:HOME}/.ssh,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.kube,target=${localEnv:HOME}/.kube,type=bind,consistency=cached"
   ],
   "postCreateCommand": {
     // "setup_docker": "sudo groupmod -g $(stat -c '%g' /var/run/docker.sock) docker && sudo chown root:docker /var/run/docker.sock",
-    "welcome": "echo 'Welcome to dev container world !!!'"
+    "welcome": "echo 'Welcome to dev container world !!!'",
+    "dbus": "sudo service dbus restart"
   },
   "remoteEnv": {
     "XSERVER_DISPLAY": "${localEnv:DISPLAY}"
@@ -23,7 +24,7 @@
   },
   "build": {
     "dockerfile": "Dockerfile.docker-amd64",
-    "context": "../..",
+    "context": "..",
     "args": {
       "USERNAME": "${localEnv:USER}",
       "DOCKER_GID": "${DOCKER_GID}"

@@ -50,6 +50,41 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: foo-infra-view-secret
+  namespace: foo-infra
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - secrets
+  - verbs:
+      - create
+    apiGroups:
+      - ''
+    resources:
+      - pods/exec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: foo-infra-view-secret-rolebinding
+  namespace: foo-infra
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: team-foo-member-view-secret
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: foo-infra-view-secret
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: foo-infra-read
   namespace: foo-infra
 rules:
@@ -59,13 +94,38 @@ rules:
       - watch
     apiGroups:
       - ''
+    resources:
+      - bindings
+      - componentstatuses
+      - configmaps
+      - endpoints
+      - events
+      - limitranges
+      - namespaces
+      - nodes
+      - persistentvolumeclaims
+      - persistentvolumes
+      - pods
+      - podtemplates
+      - replicationcontrollers
+      - resourcequotas
+      - serviceaccounts
+      - services
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
       - helm.sh
       - apps
       - batch
+      - external-secrets.io
       - extensions
       - networking.k8s.io
       - policy
       - storage.k8s.io
+      - traefik.io
+      - helm.toolkit.fluxcd.io
     resources:
       - '*'
   - verbs:
@@ -73,7 +133,6 @@ rules:
     apiGroups:
       - ''
     resources:
-      - pods/exec
       - pods/portforward
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -89,6 +148,33 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: foo-infra-read
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: foo-infra-admin
+  namespace: foo-infra
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - '*'
+    resources:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: foo-infra-admin-rolebinding
+  namespace: foo-infra
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: team-foo-member-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: foo-infra-admin
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -140,6 +226,41 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: foo-app-view-secret
+  namespace: foo-app
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - secrets
+  - verbs:
+      - create
+    apiGroups:
+      - ''
+    resources:
+      - pods/exec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: foo-app-view-secret-rolebinding
+  namespace: foo-app
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: team-foo-member-view-secret
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: foo-app-view-secret
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: foo-app-read
   namespace: foo-app
 rules:
@@ -149,13 +270,38 @@ rules:
       - watch
     apiGroups:
       - ''
+    resources:
+      - bindings
+      - componentstatuses
+      - configmaps
+      - endpoints
+      - events
+      - limitranges
+      - namespaces
+      - nodes
+      - persistentvolumeclaims
+      - persistentvolumes
+      - pods
+      - podtemplates
+      - replicationcontrollers
+      - resourcequotas
+      - serviceaccounts
+      - services
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
       - helm.sh
       - apps
       - batch
+      - external-secrets.io
       - extensions
       - networking.k8s.io
       - policy
       - storage.k8s.io
+      - traefik.io
+      - helm.toolkit.fluxcd.io
     resources:
       - '*'
   - verbs:
@@ -163,7 +309,6 @@ rules:
     apiGroups:
       - ''
     resources:
-      - pods/exec
       - pods/portforward
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -179,6 +324,33 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: foo-app-read
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: foo-app-admin
+  namespace: foo-app
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - '*'
+    resources:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: foo-app-admin-rolebinding
+  namespace: foo-app
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: team-foo-member-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: foo-app-admin
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -230,6 +402,41 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: foo-kind-view-secret
+  namespace: foo-kind
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - secrets
+  - verbs:
+      - create
+    apiGroups:
+      - ''
+    resources:
+      - pods/exec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: foo-kind-view-secret-rolebinding
+  namespace: foo-kind
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: team-foo-member-view-secret
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: foo-kind-view-secret
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: foo-kind-read
   namespace: foo-kind
 rules:
@@ -239,13 +446,38 @@ rules:
       - watch
     apiGroups:
       - ''
+    resources:
+      - bindings
+      - componentstatuses
+      - configmaps
+      - endpoints
+      - events
+      - limitranges
+      - namespaces
+      - nodes
+      - persistentvolumeclaims
+      - persistentvolumes
+      - pods
+      - podtemplates
+      - replicationcontrollers
+      - resourcequotas
+      - serviceaccounts
+      - services
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
       - helm.sh
       - apps
       - batch
+      - external-secrets.io
       - extensions
       - networking.k8s.io
       - policy
       - storage.k8s.io
+      - traefik.io
+      - helm.toolkit.fluxcd.io
     resources:
       - '*'
   - verbs:
@@ -253,7 +485,6 @@ rules:
     apiGroups:
       - ''
     resources:
-      - pods/exec
       - pods/portforward
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -269,3 +500,30 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: foo-kind-read
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: foo-kind-admin
+  namespace: foo-kind
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - '*'
+    resources:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: foo-kind-admin-rolebinding
+  namespace: foo-kind
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: team-foo-member-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: foo-kind-admin

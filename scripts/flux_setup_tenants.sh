@@ -162,6 +162,41 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: ${namespace}-view-secret
+  namespace: $namespace
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - secrets
+  - verbs:
+      - create
+    apiGroups:
+      - ''
+    resources:
+      - pods/exec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${namespace}-view-secret-rolebinding
+  namespace: ${namespace}
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: ${tenant_name}-member-view-secret
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${namespace}-view-secret
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: ${namespace}-read
   namespace: $namespace
 rules:
@@ -171,13 +206,38 @@ rules:
       - watch
     apiGroups:
       - ''
+    resources:
+      - bindings
+      - componentstatuses
+      - configmaps
+      - endpoints
+      - events
+      - limitranges
+      - namespaces
+      - nodes
+      - persistentvolumeclaims
+      - persistentvolumes
+      - pods
+      - podtemplates
+      - replicationcontrollers
+      - resourcequotas
+      - serviceaccounts
+      - services
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
       - helm.sh
       - apps
       - batch
+      - external-secrets.io
       - extensions
       - networking.k8s.io
       - policy
       - storage.k8s.io
+      - traefik.io
+      - helm.toolkit.fluxcd.io
     resources:
       - '*'
   - verbs:
@@ -185,7 +245,6 @@ rules:
     apiGroups:
       - ''
     resources:
-      - pods/exec
       - pods/portforward
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -201,6 +260,33 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: ${namespace}-read
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${namespace}-admin
+  namespace: $namespace
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - '*'
+    resources:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${namespace}-admin-rolebinding
+  namespace: ${namespace}
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: ${tenant_name}-member-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${namespace}-admin
 EOM
 }
 
