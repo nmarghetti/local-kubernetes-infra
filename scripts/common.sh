@@ -34,6 +34,7 @@ Options:
   -d, --debug                             : debug mode (default)
       --debug-full                        : debug bash
     --minikube                            : setup minikube
+    --minikube-nodes <number>             : number of nodes for minikube (default: 1). Be aware that with several nodes, the ingress addons does not work so the local DNS resolution is not available.
     --minikube-addons <addon [addon...]>  : enable minikube addons eg. ingress,ingress-dns
     --minikube-dns                        : setup dnsmasq to resolve minikube domain
     --minikube-domain <domain>            : set minikube domain (default: minikube)
@@ -102,6 +103,7 @@ parse_args() {
   use_argocd=0
   argocd_path=""
   use_dnsmasq=0
+  minikube_nodes=1
   minikube_addons=
   minikube_domain=minikube
   docker_services=portainer
@@ -129,6 +131,10 @@ parse_args() {
           no-ssl) use_ssl=0 ;;
           use-ssl) use_ssl=1 ;;
           minikube) use_minikube=1 ;;
+          minikube-nodes)
+            minikube_nodes="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
           minikube-dashboard) start_minikube_dashboard=1 ;;
           kind) use_kind=1 ;;
           kind-port)
@@ -214,6 +220,7 @@ parse_args() {
   export start_minikube_dashboard
   export minikube_domain
   export minikube_addons
+  export minikube_nodes
   export use_kind
   export KIND_HTTP_PORT
   export KIND_HTTPS_PORT

@@ -71,8 +71,8 @@ setup_minikube() {
   ./certificates/copy_certificates_to_minikube.sh
   cp -f "$CERT_PATH/ca.crt" ~/.minikube/certs/local-ca.crt
 
-  if [ ! "$(minikube status -o json | jq .APIServer | xargs printf "%s")" = "Running" ]; then
-    run_command minikube start --embed-certs --insecure-registry="${DOCKER_COMPOSE_HOST}:${REGISTRY_PORT}" -v=5 || exit_error "Unable to start local cluster"
+  if [ ! "$(minikube status -o json | jq -r 'if type == "array" then . else [.] end | .[] | select(.Name == "minikube") | .APIServer')" = "Running" ]; then
+    run_command minikube start --nodes "$minikube_nodes" --embed-certs --insecure-registry="${DOCKER_COMPOSE_HOST}:${REGISTRY_PORT}" -v=5 || exit_error "Unable to start local cluster"
 
     # Add minikube certificates to nginx service
     kubectl config view --minify --raw | yq -o json | jq '.clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-minikube-k8s/"' | yq -P >./tmp/minikube_kubeconfig.yaml
@@ -102,7 +102,7 @@ setup_minikube() {
     # Create user context for minikube cluster
     setup_kubectl_user_context
   fi
-  [ "$(minikube status -o json | jq .APIServer | xargs printf "%s")" = "Running" ] || exit_error "Unable to start local cluster"
+  [ "$(minikube status -o json | jq -r 'if type == "array" then . else [.] end | .[] | select(.Name == "minikube") | .APIServer')" = "Running" ] || exit_error "Unable to start local cluster"
 
   # Refresh minikube ip
   HOST_IP=$(minikube ip)

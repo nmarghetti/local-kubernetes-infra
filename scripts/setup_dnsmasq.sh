@@ -49,12 +49,15 @@ setup_dnsmasq() {
   # Activate and configure dnsmasq in docker compose
   log_step "Dnsmasq UI configuration is available at http://localhost:${DNSMASQ_UI_PORT}"
   log_info "Updating dnsmasq configuration in docker compose service"
-  if grep -qE "^server=/${CLUSTER_DOMAIN}/" docker-compose/docker/dnsmasq/dnsmasq.conf; then
-    run_command sed -i -re "s#^server=/${CLUSTER_DOMAIN}/.*\$#server=/${CLUSTER_DOMAIN}/${HOST_IP}#" docker-compose/docker/dnsmasq/dnsmasq.conf
-  else
-    log_command "echo server=/${CLUSTER_DOMAIN}/${HOST_IP} >>docker-compose/docker/dnsmasq/dnsmasq.conf"
-    echo "server=/${CLUSTER_DOMAIN}/${HOST_IP}" >>docker-compose/docker/dnsmasq/dnsmasq.conf
-  fi
+  local cluster_domain
+  for cluster_domain in $(echo "minikube $CLUSTER_DOMAIN" | tr ' ' '\n' | uniq); do
+    if grep -qE "^server=/${cluster_domain}/" docker-compose/docker/dnsmasq/dnsmasq.conf; then
+      run_command sed -i -re "s#^server=/${cluster_domain}/.*\$#server=/${cluster_domain}/${HOST_IP}#" docker-compose/docker/dnsmasq/dnsmasq.conf
+    else
+      log_command "echo server=/${cluster_domain}/${HOST_IP} >>docker-compose/docker/dnsmasq/dnsmasq.conf"
+      echo "server=/${cluster_domain}/${HOST_IP}" >>docker-compose/docker/dnsmasq/dnsmasq.conf
+    fi
+  done
   local dns_server
   dns_server=$(grep nameserver /etc/resolv.conf | grep -v 127.0.0.1 | head -1 | awk '{ print $2 }')
   # Override dhcp-option
@@ -104,9 +107,11 @@ setup_dnsmasq() {
   # shellcheck source=../k8s/podinfo/setup_podinfo.sh
   . "$GIT_ROOT"/k8s/podinfo/setup_podinfo.sh
   install_podinfo_with_kubectl || exit_error "Unable to install podinfo"
-  if [ -n "$CLUSTER_DOMAIN" ] && [ ! "$CLUSTER_DOMAIN" = "minikube" ]; then
-    kubectl --namespace info create ingress --class nginx --rule "podinfo.$CLUSTER_DOMAIN/*=podinfo:9898" --dry-run=client -o yaml podinfo-domain | kubectl apply -f -
-    cat <<EOM | kubectl apply -f -
+  cluster_domain="${CLUSTER_DOMAIN}"
+  if [ ! "$CLUSTER_DOMAIN" = "minikube" ]; then
+    if ! kubectl api-resources --no-headers --api-group 'traefik.io' | wc -l | grep -qFx 0; then
+      kubectl --namespace info create ingress --class nginx --rule "podinfo.$CLUSTER_DOMAIN/*=podinfo:9898" --dry-run=client -o yaml podinfo-domain | kubectl apply -f -
+      cat <<EOM | kubectl apply -f -
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -126,13 +131,19 @@ spec:
           name: podinfo
           port: 9898
 EOM
+    else
+      cluster_domain="minikube"
+      log_warn "Traefik is not available, unable to create ingress to target 'podinfo.${CLUSTER_DOMAIN}' yet. Please rerun when traefik is available."
+    fi
   fi
 
-  log_info "Checking resolution of podinfo.${CLUSTER_DOMAIN}"
-  run_command_hide nslookup podinfo."${CLUSTER_DOMAIN}" || exit_error "Unable to resolve podinfo.${CLUSTER_DOMAIN}"
-  run_command nslookup podinfo."${CLUSTER_DOMAIN}" | grep -qiE "^name:.*podinfo.$CLUSTER_DOMAIN" || log_error "Unable to resolve podinfo.${CLUSTER_DOMAIN}"
+  log_info "Checking resolution of podinfo.${cluster_domain}"
+  run_command_hide nslookup podinfo."${cluster_domain}" 127.0.0.1 || exit_error "Unable to resolve podinfo.${cluster_domain}"
+  run_command nslookup podinfo."${cluster_domain}" 127.0.0.1 | grep -qiE "^name:.*podinfo.$cluster_domain" || log_error "Unable to resolve podinfo.${cluster_domain}"
 
-  log_step "Podinfo available at http://podinfo.${CLUSTER_DOMAIN} and http://podinfo.${CLUSTER_DOMAIN}/swagger/index.html only under WSL local network (not under Windows host)"
+  log_step "Podinfo available at http://podinfo.${cluster_domain} and http://podinfo.${cluster_domain}/swagger/index.html only under WSL local network (not under Windows host)"
+
+  return 0
   # log_step "Dkd swagger is available at http://dkd.minikube/dkd/docs"
   # chrome://flags/#allow-insecure-localhost
   # kubectl get -n elastic-system secrets analytics-kb-es-ca -o json | jq '.data."ca.crt" | @base64d' | xargs printf >
