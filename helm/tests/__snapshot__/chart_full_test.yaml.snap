@@ -59,10 +59,13 @@ chart should match snapshot:
           app.kubernetes.io/name: play
       template:
         metadata:
+          annotations:
+            prometheus: enabled
           labels:
             app.kubernetes.io/component: backend
             app.kubernetes.io/instance: mychart
             app.kubernetes.io/name: play
+            prometheus: std-metrics
         spec:
           affinity:
             nodeAffinity:
@@ -178,6 +181,13 @@ chart should match snapshot:
                 requests:
                   cpu: 1
                   memory: 100Mi
+          initContainers:
+            - command:
+                - sh
+                - -c
+                - echo $(SOME_ENV) > /usr/share/nginx/html/index.html
+              image: docker.io/busybox:latest
+              name: init
           volumes:
             - configMap:
                 items:
@@ -309,6 +319,7 @@ chart should match snapshot:
                     templateAs: KeysAndValues
                 name: mychart-play-common-secretconfig
               target: Annotations
+          type: Opaque
   7: |
     apiVersion: networking.k8s.io/v1
     kind: Ingress

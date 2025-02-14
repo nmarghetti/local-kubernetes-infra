@@ -386,12 +386,19 @@ spec:
     name: {{ $secretName }}
     template:
       engineVersion: v2
+      type: {{ default "Opaque" .config.secretType }}
       metadata:
         annotations:
           reloader.stakater.com/match: 'true'
+          {{- with .config.annotations }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
         labels:
           chart-app: {{ .appName }}
           chart-secret-source: external-secrets
+          {{- with .config.labels }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
       templateFrom:
         - target: Data
           configMap:

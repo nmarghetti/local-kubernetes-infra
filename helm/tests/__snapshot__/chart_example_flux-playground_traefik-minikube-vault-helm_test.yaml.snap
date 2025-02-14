@@ -225,6 +225,7 @@ chart should match snapshot:
                     templateAs: KeysAndValues
                 name: mychart-podinfo-secretconfig
               target: Annotations
+          type: Opaque
   7: |
     apiVersion: networking.k8s.io/v1
     kind: Ingress

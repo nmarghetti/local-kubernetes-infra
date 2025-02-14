@@ -53,6 +53,10 @@ apps:
       livenessProbe: /health
       readinessProbe: /health
       container:
+        labels:
+          prometheus: std-metrics
+        annotations:
+          prometheus: enabled
         env:
           - name: env-key
             value: value
@@ -84,6 +88,13 @@ apps:
           limits:
             cpu: 1
             memory: 200Mi
+      initContainers:
+        - name: init
+          image: docker.io/busybox:latest
+          command:
+            - sh
+            - -c
+            - echo $(SOME_ENV) > /usr/share/nginx/html/index.html
       volumes:
         - name: home
           configMap:

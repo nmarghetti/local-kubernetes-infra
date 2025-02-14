@@ -29,6 +29,19 @@ spec:
       labels:
         {{- include "chart.selectorLabels" $ | nindent 8 }}
         app.kubernetes.io/component: {{ $appName }}
+        {{- if $deployment.container }}
+          {{- with $deployment.container.labels }}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+        {{- end }}
+        {{- if $deployment.container }}
+          {{- if $deployment.container.annotations }}
+      annotations:
+            {{- with $deployment.container.annotations }}
+              {{- toYaml . | nindent 8 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
     spec:
       containers:
         - name: app
@@ -89,7 +102,7 @@ spec:
 
           {{- with $deployment.container }}
           {{- range $key, $value := . }}
-          {{- if and (ne $key "env") (ne $key "envFrom") }}
+          {{- if and (ne $key "env") (ne $key "envFrom") (ne $key "labels") (ne $key "annotations") }}
           {{ $key }}:
             {{- toYaml $value | nindent 12 }}
           {{- end }}
@@ -102,6 +115,12 @@ spec:
         {{- $containers | nindent 8 }}
       {{- end }}
 
+      {{- if $deployment.initContainers }}
+      initContainers:
+        {{- $initContainers := toYaml $deployment.initContainers }}
+        {{- $initContainers = regexReplaceAll "\\${chart\\[([^\\]]+)\\]}" $initContainers (printf "%s-$1" (include "chart.fullname" $) ) }}
+        {{- $initContainers | nindent 8 }}
+      {{- end }}
 
       {{- if $deployment.volumes }}
       volumes:
