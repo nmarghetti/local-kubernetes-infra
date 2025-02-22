@@ -279,9 +279,56 @@ services:
       - ./docker/traefik/config:/etc/traefik
       - ./docker/traefik/config/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
 
+  harness:
+    container_name: harness
+    image: harness/harness
+    environment:
+      - GITNESS_HTTP_PORT=${HARNESS_PORT:-3200}
+      - GITNESS_SSH_PORT=${HARNESS_SSH_PORT:-3222}
+      - GITNESS_PRINCIPAL_ADMIN_EMAIL=${HARNESS_ADMIN_EMAIL:-admin@harness-no-reply.com}
+      - GITNESS_PRINCIPAL_ADMIN_PASSWORD=${GITNESS_PRINCIPAL_ADMIN_PASSWORD:-pyUfpQsjG1PhdTO0VuiI}
+      - GITNESS_USER_SIGNUP_ENABLED=false
+    ports:
+      - "${HARNESS_PORT:-3200}:${HARNESS_PORT:-3200}"
+      - "${HARNESS_SSH_PORT:-3222}:${HARNESS_SSH_PORT:-3222}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - harness:/data
+
+  harness-delegate:
+    container_name: harness-delegate
+    image: harness/delegate:25.01.85000
+    environment:
+      - DELEGATE_NAME=docker-delegate
+      - NEXT_GEN="true"
+      - DELEGATE_TYPE="DOCKER"
+      # - ACCOUNT_ID=${HARNESS_ACCOUNT_ID:?[ERROR] HARNESS_ACCOUNT_ID is not set}
+      # - DELEGATE_TOKEN=${HARNESS_DELEGATE_TOKEN:?[ERROR] HARNESS_DELEGATE_TOKEN is not set}
+      - ACCOUNT_ID=${HARNESS_ACCOUNT_ID}
+      - DELEGATE_TOKEN=${HARNESS_DELEGATE_TOKEN}
+      - DELEGATE_TAGS="linux-amd64"
+      - LOG_STREAMING_SERVICE_URL=https://app.harness.io/log-service/
+      - MANAGER_HOST_AND_PORT=https://app.harness.io
+      - RUNNER_URL=http://localhost:${HARNESS_DOCKER_RUNNER_PORT:-3250}
+      # - INIT_SCRIPT=/scripts/init_delegate.sh
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 2G
+    volumes:
+      - ../certificates:/opt/harness-delegate/ca-bundle
+    #   - ../scripts/utils/log.sh:/scripts/utils/log.sh
+    #   - ../scripts/common.sh:/scripts/common.sh
+    #   - ../scripts/setup_deps.sh:/scripts/setup_deps.sh
+    #   - ./docker/harness/init_delegate.sh:/scripts/init_delegate.sh
+    #   - ../Dockerfile:/scripts/Dockerfile
+    #   - ../.gitattributes:/scripts/.gitattributes
+    network_mode: "host"
 volumes:
   registry:
   helm:
   gitea:
     driver: local
   portainer:
+  harness:

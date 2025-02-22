@@ -28,6 +28,8 @@ SCRIPTS=$(git rev-parse --show-toplevel)/scripts
 . "$SCRIPTS"/setup_argocd.sh
 # shellcheck source=scripts/setup_dnsmasq.sh
 . "$SCRIPTS"/setup_dnsmasq.sh
+# shellcheck source=scripts/setup_harness.sh
+. "$SCRIPTS"/setup_harness.sh
 
 parse_args "$@"
 
@@ -53,6 +55,9 @@ run_command setup_docker_compose_services || exit_error "Unable to setup docker 
 }
 [ "$use_dnsmasq" -eq 1 ] && {
   run_command setup_dnsmasq || exit_error "Unable to setup dnsmasq"
+}
+[[ -n "$harness_account_id" || -n "$harness_delegate_token" ]] && {
+  run_command setup_harness || exit_error "Unable to setup harness"
 }
 
 # tmp_cert=$(mktemp)

@@ -53,6 +53,9 @@ git submodule update --remote
    - [kubernetes_overview](exercice/05_kubernetes_overview.md)
    - [minikube](exercice/06_minikube.md)
    - [kind](exercice/07_kind.md)
+   - [flux](exercice/08_flux.md)
+   - [argocd](exercice/09_argocd.md)
+   - [harness](exercice/10_harness.md)
 
 1. Local services with docker compose
 
@@ -67,6 +70,7 @@ git submodule update --remote
    - docker-registry-ui: UI for the docker registry available at <http://localhost:8087/>
    - podinfo: simple webserver/api available at <http://localhost:9898/> with swagger at <http://localhost:9898/swagger/index.html>
    - dnsmasq: dns server with UI available at <http://localhost:3053/> with admin/dnsmasq
+   - harness: harness open source available at <http://localhost:3200/>.
 
    You can run them all with the following command knowing that it will be run anyway with playing with the playground:
 

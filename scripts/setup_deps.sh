@@ -5,7 +5,7 @@ get_dockerfile_deps() {
 }
 
 install_deps() {
-  local dependencies="curl jq git gitk"
+  local dependencies="curl jq git gitk grc"
   local dependencies_to_install=
   local dep
 

@@ -5,9 +5,9 @@ export CERT_PATH=./docker-compose/docker/certificates
 GIT_ROOT=
 if type git >/dev/null 2>&1; then
   GIT_ROOT="$(git rev-parse --show-toplevel)"
-  [ -n "$GIT_ROOT" ] || exit_error "Unable to retrieve the root of the git repository"
+  # [ -n "$GIT_ROOT" ] || exit_error "Unable to retrieve the root of the git repository"
   # shellcheck source=../docker-compose/docker-compose.env
-  [ -f "$GIT_ROOT"/docker-compose/docker-compose.env ] && . "$GIT_ROOT"/docker-compose/docker-compose.env
+  [ -d "$GIT_ROOT" ] && [ -f "$GIT_ROOT"/docker-compose/docker-compose.env ] && . "$GIT_ROOT"/docker-compose/docker-compose.env
 fi
 
 log_file=
@@ -15,6 +15,8 @@ if [ -n "$GIT_ROOT" ]; then
   log_file="$GIT_ROOT"/scripts/utils/log.sh
 elif [[ -v "${BASH_SOURCE[0]}" ]]; then
   log_file="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"/utils/log.sh
+elif [ -f ./utils/log.sh ]; then
+  log_file="$(realpath ./utils/log.sh)"
 fi
 if [ ! -f "$log_file" ]; then
   echo "Unable to find log.sh" >&2
@@ -44,6 +46,10 @@ Options:
     --kind-tls-port <port>                : port on which kind listens for https (defaut 8843)
     --kind-podinfo                        : add podinfo in kind cluster
     --docker-services <service[,service]> : select docker services, comma separated, to setup amongs $(yq .services -o json <./docker-compose/docker-compose.yaml | jq -r '[keys[] | select(. | startswith("init-") | not)] | join(",")') (default all)
+    --harness-account-id <id>             : set harness account id
+    --harness-delegate-token <token>      : set harness delegate token
+    --harness-delegate-image <image>      : set harness delegate image, default to harness/delegate:25.01.85000
+    --harness-docker-runner-port <port>   : set harness docker runner port (default: 3250)
     --traefik-log <level>                 : set traefik log level amongs TRACE,DEBUG,INFO,WARN,ERROR,FATAL,PANIC (default: INFO)
     --nginx-log <level>                   : set nginx log level amongs debug,info,notice,warn,error,crit,alert,emerg (default: notice)
     --dkd                                 : setup dkd image
@@ -99,6 +105,10 @@ parse_args() {
   flux_image_automation=0
   flux_local_helm=0
   flux_bootstrap=0
+  harness_account_id=
+  harness_delegate_token=
+  harness_delegate_image=harness/delegate:25.01.85000
+  HARNESS_DOCKER_RUNNER_PORT=${HARNESS_DOCKER_RUNNER_PORT:-3250}
   GITEA_SET_WEBHOOK=0
   use_argocd=0
   argocd_path=""
@@ -187,6 +197,22 @@ parse_args() {
             NGINX_LOG_LEVEL="$(echo "${!OPTIND}" | tr ',' ' ')"
             OPTIND=$((OPTIND + 1))
             ;;
+          harness-account-id)
+            harness_account_id="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
+          harness-delegate-token)
+            harness_delegate_token="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
+          harness-delegate-image)
+            harness_delegate_image="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
+          harness-docker-runner-port)
+            HARNESS_DOCKER_RUNNER_PORT="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
           *)
             echo "Unknow option $OPTARG"
             usage
@@ -215,6 +241,14 @@ parse_args() {
   [ "$flux_local_helm" -eq 1 ] && docker_services="$docker_services helm"
   # Ensure to use dnsmasq only with minikube
   [ $use_minikube -eq 0 ] && use_dnsmasq=0
+
+  # Ensure everything is setup well if using harness
+  if [ -n "$harness_account_id" ] || [ -n "$harness_delegate_token" ]; then
+    [ -n "$harness_account_id" ] || exit_error "Unable to setup harness without an account id, add --harness-account-id <id>"
+    [ -n "$harness_delegate_token" ] || exit_error "Unable to setup harness without a delegate token, add --harness-delegate-token <token>"
+    [ $use_minikube -eq 1 ] || exit_error "Unable to setup harness without minikube, add --minikube"
+  fi
+
   export use_ssl
   export use_minikube
   export start_minikube_dashboard
@@ -239,5 +273,9 @@ parse_args() {
   export GITEA_SET_WEBHOOK
   export NGINX_LOG_LEVEL
   export TRAEFIK_LOG_LEVEL
+  export harness_account_id
+  export harness_delegate_token
+  export harness_delegate_image
+  export HARNESS_DOCKER_RUNNER_PORT
   return 0
 }
