@@ -5,12 +5,12 @@ metadata:
 spec:
   chart:
     spec:
-      chart: mychart
+      chart: generic-chart
       sourceRef:
         kind: HelmRepository
-        name: mychart
+        name: generic-helm
         namespace: flux-system
-      version: 1.0.0
+      version: 1.0.1
   interval: 5m
   values:
     vault:

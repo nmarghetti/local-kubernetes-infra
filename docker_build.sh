@@ -96,7 +96,7 @@ shift $((OPTIND - 1))
   exit 1
 }
 
-[ "$DEBUG_FULL" -eq 1 ] && set -x
+# [ "$DEBUG_FULL" -eq 1 ] && set -x
 
 export TRAEFIK_PORT=30000
 export PORTAINER_PORT=30001
@@ -156,6 +156,7 @@ docker buildx build -t localarch --build-arg USERNAME="${USER:-USERNAME}" --buil
     docker container rm localarch >/dev/null 2>&1
     docker run --privileged --cap-add=ALL \
       ${kind_extra_args[@]} \
+      -e IS_LOCALARCH_CONTAINER=1 \
       -e DEBUG_FULL="$DEBUG_FULL" \
       -e START_MINIKUBE="$START_MINIKUBE" \
       -e START_MINIKUBE_DASHBOARD="$START_MINIKUBE_DASHBOARD" \
@@ -210,14 +211,17 @@ EOM
   typeset -i cpt=0
   : >./tmp/localarch.log
   # wait 10min for minikube to be up and running
-  while [ $cpt -lt 60 ] && ! docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version' &>>./tmp/localarch.log; do
+  while [ $cpt -lt 60 ]; do
+    minikube_api=$(docker exec -ti localarch sh -c 'kubectl cluster-info' 2>>./tmp/localarch.log | grep 'https' | head -1 | sed -re 's#^.*(https://[0-9\.:]+).*$#\1#') &&
+      docker exec -ti localarch sh -c "curl '$minikube_api/version'" &>>./tmp/localarch.log &&
+      break
     printf '.'
     sleep 10
     cpt+=1
   done
   printf '\n\n'
 
-  ! docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version' &>/dev/null &&
+  ! docker exec -ti localarch sh -c "curl '$minikube_api/version'" &>>./tmp/localarch.log &&
     {
       echo "Unable to start localarch container" >&2
       exit 1
@@ -229,13 +233,44 @@ EOM
     sudo update-ca-certificates -f
 
   # Retrieve the minikube kubeconfig file
-  docker exec -ti localarch cat tmp/minikube_kubeconfig.yaml | yq -o json | jq '.clusters[0].name |= "minikube_localarch" | .contexts[0].name |= "minikube_localarch" | .contexts[0].context.cluster |= "minikube_localarch" | .contexts[0].context.user |= "minikube_localarch" | .users[0].name |= "minikube_localarch"' | yq 'del(.current-context)' | yq -P >./tmp/minikube_localarch_kubeconfig.yaml
-  yq -i 'del(.clusters[0].cluster.certificate-authority-data) | del(.users[0].user)' ./tmp/minikube_localarch_kubeconfig.yaml
-  docker exec -ti localarch cat tmp/"minikube-${USER}_nginx_kubeconfig.yaml" | yq -o json | jq '.clusters[0].name |= "minikube_localarch-'"${USER}"'" | .contexts[0].name |= "minikube_localarch-'"${USER}"'" | .contexts[0].context.cluster |= "minikube_localarch-'"${USER}"'"' | yq 'del(.current-context)' | yq -P >./tmp/minikube_localarch-"${USER}"_kubeconfig.yaml
+  docker exec -ti localarch cat tmp/minikube_kubeconfig.yaml | yq '
+    del(.current-context) |
+    .clusters[0].cluster.server |= "http://localhost:30771" |
+    .clusters[0].name |= "minikube_localarch" |
+    .contexts[0].name |= "minikube_localarch" |
+    .contexts[0].context.cluster |= "minikube_localarch" |
+    .contexts[0].context.user |= "minikube_localarch" |
+    .users[0].name |= "minikube_localarch"
+    ' >./tmp/minikube_localarch_kubeconfig.yaml
+  [ -z "${KUBECONFIG:-}" ] && KUBECONFIG=~/.kube/config:./tmp/minikube_localarch_kubeconfig.yaml kubectl config view --flatten | sponge ~/.kube/config
+
+  yq '
+      del(.clusters[0].cluster.certificate-authority-data) |
+      del(.users[0].user) |
+      .clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-minikube-k8s/" |
+      .clusters[0].name |= "minikube_localarch_nginx" |
+      .contexts[0].name |= "minikube_localarch_nginx" |
+      .contexts[0].context.cluster |= "minikube_localarch_nginx" |
+      .contexts[0].context.user |= "minikube_localarch_nginx" |
+      .users[0].name |= "minikube_localarch_nginx"
+      ' ./tmp/minikube_localarch_kubeconfig.yaml >./tmp/minikube_localarch_nginx_kubeconfig.yaml
+  [ -z "${KUBECONFIG:-}" ] && KUBECONFIG=~/.kube/config:./tmp/minikube_localarch_nginx_kubeconfig.yaml kubectl config view --flatten | sponge ~/.kube/config
+
+  docker exec -ti localarch cat tmp/"minikube-user_kubeconfig.yaml" | yq '
+    .clusters[0].cluster.server |= "http://localhost:30771" |
+    .clusters[0].name |= "minikube_localarch" |
+    .contexts[0].name |= "minikube_localarch-'"${USER}"'" |
+    .contexts[0].context.cluster |= "minikube_localarch" |
+    .contexts[0].context.user |= "minikube_localarch-'"${USER}"'" |
+    .users[0].name |= "minikube_localarch-'"${USER}"'"
+    ' >./tmp/minikube_localarch-user_kubeconfig.yaml
+  [ -z "${KUBECONFIG:-}" ] && KUBECONFIG=~/.kube/config:./tmp/minikube_localarch-user_kubeconfig.yaml kubectl config view --flatten | sponge ~/.kube/config
 
   cat <<EOM
 
-You can check the minikube cluster version: docker exec -ti localarch sh -c 'curl https://127.0.0.1:32771/version'
+You can check the minikube cluster version:
+  - docker exec -ti localarch sh -c 'curl "$minikube_api/version"'
+  - curl http://localhost:30771/version
 You can use the following kubeconfig file to access the minikube cluster: ./tmp/minikube_localarch_kubeconfig.yaml
 You should be able to access the following services:
   - Portainer: http://localhost:$PORTAINER_PORT

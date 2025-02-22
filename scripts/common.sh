@@ -41,6 +41,7 @@ Options:
     --minikube-dns                        : setup dnsmasq to resolve minikube domain
     --minikube-domain <domain>            : set minikube domain (default: minikube)
     --minikube-dashboard                  : start minikube dashboard
+    --minikube-port <port>                : port on which minikube listens for http (defaut 32771)
     --kind                                : setup kind
     --kind-port <port>                    : port on which kind listens for http (defaut 8880)
     --kind-tls-port <port>                : port on which kind listens for https (defaut 8843)
@@ -116,6 +117,7 @@ parse_args() {
   minikube_nodes=1
   minikube_addons=
   minikube_domain=minikube
+  minikube_port=32771
   docker_services=portainer
   NGINX_LOG_LEVEL=info
   TRAEFIK_LOG_LEVEL=info
@@ -165,6 +167,10 @@ parse_args() {
             ;;
           minikube-addons)
             minikube_addons="${!OPTIND}"
+            OPTIND=$((OPTIND + 1))
+            ;;
+          minikube-port)
+            minikube_port="${!OPTIND}"
             OPTIND=$((OPTIND + 1))
             ;;
           flux-path)
@@ -255,6 +261,7 @@ parse_args() {
   export minikube_domain
   export minikube_addons
   export minikube_nodes
+  export minikube_port
   export use_kind
   export KIND_HTTP_PORT
   export KIND_HTTPS_PORT

@@ -12,6 +12,8 @@ setup_kubectl_user_context() {
   else
     exit_error "You did not choose if you use minikube or kind (--kind | --minikube)"
   fi
+  local cluster_context="${cluster}-${USER}"
+  local user_name="${cluster_name}-$USER"
   # Generate certificate
   run_command openssl genrsa -out ./tmp/user.key 2048
   run_command openssl req -new -key ./tmp/user.key -out ./tmp/user.csr -subj "/CN=$USER"
@@ -39,17 +41,15 @@ EOF
   fi
 
   # Create kubectl context <cluster>-user to connect with the user and the certificate
-  run_command kubectl config set-credentials "$USER" --embed-certs=true --client-certificate=./tmp/user.crt --client-key=./tmp/user.key
-  run_command kubectl config set-context "$cluster"-"$USER" --cluster="$cluster" --user="$USER" --namespace=default
+  run_command kubectl config set-credentials "$user_name" --embed-certs=true --client-certificate=./tmp/user.crt --client-key=./tmp/user.key
+  run_command kubectl config set-context "$cluster_context" --cluster="$cluster" --user="$user_name" --namespace=default
 
   # Generate cluster info to add to Lens
-  # run_command kubectl config --context "$cluster"-"$USER" view --minify --raw | run_command_piped yq '.users[0].user |= { "username": "'"$USER"'", "client-certificate-data": "'"$(base64 <./tmp/user.crt | tr -d '\n')"'", "client-key-data": "'"$(base64 <./tmp/user.key | tr -d '\n')"'" }' >./tmp/"${cluster_name}-${USER}_kubeconfig.yaml"
-  run_command kubectl config --context "$cluster"-"$USER" view --minify --raw | yq 'del(.current-context)' >./tmp/"${cluster_name}-user_kubeconfig.yaml"
+  # run_command kubectl config --context "$cluster_context" view --minify --raw | run_command_piped yq '.users[0].user |= { "username": "'"$USER"'", "client-certificate-data": "'"$(base64 <./tmp/user.crt | tr -d '\n')"'", "client-key-data": "'"$(base64 <./tmp/user.key | tr -d '\n')"'" }' >./tmp/"${cluster_name}-user_kubeconfig.yaml"
+  run_command kubectl config --context "$cluster_context" view --minify --raw | yq 'del(.current-context)' >./tmp/"${cluster_name}-user_kubeconfig.yaml"
 
-  run_command yq -i 'del(.current-context) | .clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-minikube-k8s/"' ./tmp/"${cluster_name}-user_kubeconfig.yaml"
-
-  run_command kubectl --context "$cluster"-"$USER" create clusterrole list-namespaces --verb=get --verb=list --resource=namespaces --dry-run=client -o yaml | run_command_piped kubectl apply -f -
-  run_command kubectl --context "$cluster"-"$USER" create clusterrolebinding list-namespaces-binding --clusterrole=list-namespaces --user="$USER" --dry-run=client -o yaml | run_command_piped kubectl apply -f -
+  run_command kubectl --context "$cluster_context" create clusterrole list-namespaces --verb=get --verb=list --resource=namespaces --dry-run=client -o yaml | run_command_piped kubectl apply -f -
+  run_command kubectl --context "$cluster_context" create clusterrolebinding list-namespaces-binding --clusterrole=list-namespaces --user="$USER" --dry-run=client -o yaml | run_command_piped kubectl apply -f -
 
   return 0
 }

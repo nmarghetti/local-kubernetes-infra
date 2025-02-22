@@ -5,11 +5,16 @@ cd "$(dirname "$(readlink -f "$0")")" || {
   exit 1
 }
 
+exit_error() {
+  echo "$@" >&2
+  exit 1
+}
+
 GIT_ROOT="$(git rev-parse --show-toplevel)"
 
 # Ensure to have local docker image built
-"$GIT_ROOT"/docker/docker-build.sh flux-automated 2024-12-25-08-00.0
-"$GIT_ROOT"/docker/docker-build.sh myproject-automated 1.0.0
+"$GIT_ROOT"/docker/docker-build.sh flux-automated 2024-12-25-08-00.0 || exit_error "Unable to build flux-automated image"
+"$GIT_ROOT"/docker/docker-build.sh myproject-automated 1.0.0 || exit_error "Unable to build myproject-automated image"
 
 # Wait for all flux kustomization to reconcile
 while read -r line; do

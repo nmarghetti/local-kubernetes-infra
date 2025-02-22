@@ -120,8 +120,8 @@ scenario_traefik_minikube_vault_helm() {
   PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube $minikube_dashboard_param --gitea-webhook --flux-image-automation --flux-path k8s/flux-playground/traefik-minikube-vault-helm --minikube-addons "ingress ingress-dns" --minikube-dns --docker-services gitea,registry,registry-ui,helm,dnsmasq,dkd,nginx,traefik
 
   printf "\nChecking how whoami answers...\n"
-  if kubectl wait --for=condition=available --timeout=60s deployment/apps-mychart-whoami -n apps; then
-    kubectl get pods -l app.kubernetes.io/name=mychart -l app.kubernetes.io/instance=apps -l app.kubernetes.io/component=whoami -n apps -o wide
+  if kubectl wait --for=condition=available --timeout=60s deployment/apps-generic-chart-whoami -n apps; then
+    kubectl get pods -l app.kubernetes.io/name=generic-chart -l app.kubernetes.io/instance=apps -l app.kubernetes.io/component=whoami -n apps -o wide
     for i in $(seq 1 10); do
       [ "$(curl -s -o /dev/null -w "%{http_code}" http://whoami.traefik.minikube)" -eq 200 ] && break
       sleep "$i"
@@ -131,8 +131,8 @@ scenario_traefik_minikube_vault_helm() {
   curl -sSf http://whoami.traefik.minikube
 
   printf "\nChecking how podinfo answers...\n"
-  if kubectl wait --for=condition=available --timeout=150s deployment/apps-mychart-podinfo -n apps; then
-    kubectl get pods -l app.kubernetes.io/name=mychart -l app.kubernetes.io/instance=apps -l app.kubernetes.io/component=podinfo -n apps -o wide
+  if kubectl wait --for=condition=available --timeout=150s deployment/apps-generic-chart-podinfo -n apps; then
+    kubectl get pods -l app.kubernetes.io/name=generic-chart -l app.kubernetes.io/instance=apps -l app.kubernetes.io/component=podinfo -n apps -o wide
     for i in $(seq 1 10); do
       [ "$(curl -s -o /dev/null -w "%{http_code}" http://podinfo.traefik.minikube)" -eq 200 ] && break
       sleep "$i"

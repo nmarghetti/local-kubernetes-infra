@@ -7,7 +7,7 @@ ARG UID=1000
 ENV USER=$USERNAME
 
 # apt packages
-ARG APT_PACKAGES="bash-completion curl jq git gitk software-properties-common gnupg gettext netcat-openbsd net-tools iproute2 moreutils apache2-utils dnsutils iputils-ping"
+ARG APT_PACKAGES="bash-completion curl jq git gitk grc software-properties-common gnupg gettext netcat-openbsd net-tools iproute2 moreutils apache2-utils dnsutils iputils-ping"
 # yq
 ARG YQ_INSTALL=1
 # mkcert

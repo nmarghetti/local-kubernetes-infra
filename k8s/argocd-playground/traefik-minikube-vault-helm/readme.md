@@ -10,8 +10,8 @@ This is a complete showcase of:
 # Here is the command to run the minimum needed for this playground to work
 PODINFO_UI_MESSAGE='Hello from minikube local cluster' ./start.sh --minikube --minikube-addons "ingress ingress-dns" --minikube-dns --argocd-path ./k8s/argocd-playground/traefik-minikube-vault-helm/argocd --docker-services gitea,registry,helm,dnsmasq
 
-# To access argocd from https://localhost:8080/ with user admin and password Y0NfZtbDAm9Yv3jz
-kubectl port-forward svc/argocd-server -n argocd 8080:80
+# To access argocd from http://localhost:8888/ with user admin and password Y0NfZtbDAm9Yv3jz
+kubectl port-forward svc/argocd-server -n argocd 8888:80
 
 # You can then check podinfo message
 curl -sSf http://podinfo.minikube | jq -r '.message'

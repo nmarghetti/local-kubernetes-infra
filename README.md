@@ -6,8 +6,11 @@
 # Init submodules
 git submodule update --init
 cd scripts/utils &&
-  for submodule in $(git submodule | awk '{ print $2 }'); do if [ -e "$submodule" ]; then git submodule deinit -f "$submodule"; fi; done &&
   git sparse-checkout set --no-cone '/log.sh' &&
+  cd -
+cd helm &&
+  for submodule in $(git submodule | awk '{ print $2 }'); do if [ -e "$submodule" ]; then git submodule deinit -f "$submodule" 2>/dev/null; fi; done &&
+  git sparse-checkout set --no-cone '/generic-chart' '/tests' '/README.md' &&
   cd -
 
 # Upgrade submodules

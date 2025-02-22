@@ -4,3 +4,6 @@
 [submodule "scripts/utils"]
 	path = scripts/utils
 	url = https://github.com/nmarghetti/shell-utils.git
+[submodule "helm"]
+	path = helm
+	url = https://github.com/nmarghetti/generic-helm.git

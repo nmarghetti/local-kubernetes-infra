@@ -47,7 +47,7 @@ setup_argocd() {
   # Add the git repository
   repos="$(argocd "${ARGOCD_OPTS[@]}" repo list | awk '{ print $2 }' | tail -n +2)"
   echo "$repos" | grep -qFx 'local_cluster' || run_command argocd "${ARGOCD_OPTS[@]}" repo add --type git --project default --name local_cluster ssh://git@host.local-cluster.internal:222/gitadmin/local_cluster.git --ssh-private-key-path "$HOME"/.ssh/id_rsa --insecure-ignore-host-key
-  echo "$repos" | grep -qFx 'mychart' || run_command argocd "${ARGOCD_OPTS[@]}" repo add --type helm --project default --name mychart http://host.local-cluster.internal:8088/
+  echo "$repos" | grep -qFx 'generic-chart' || run_command argocd "${ARGOCD_OPTS[@]}" repo add --type helm --project default --name generic-chart http://host.local-cluster.internal:8088/
   echo "$repos" | grep -qFx 'external-secrets-io' || run_command argocd "${ARGOCD_OPTS[@]}" repo add --type helm --project default --name external-secrets-io https://charts.external-secrets.io
   echo "$repos" | grep -qFx 'traefik' || run_command argocd "${ARGOCD_OPTS[@]}" repo add --type helm --project default --name traefik https://traefik.github.io/charts
 

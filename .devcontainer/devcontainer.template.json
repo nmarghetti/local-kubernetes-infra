@@ -23,7 +23,7 @@
     // "DOCKER_COMPOSE_NAME": "devcontainer-services"
   },
   "build": {
-    "dockerfile": "Dockerfile.docker-amd64",
+    "dockerfile": "Dockerfile",
     "context": "..",
     "args": {
       "USERNAME": "${localEnv:USER}",

@@ -12,12 +12,12 @@ spec:
     - ref: values
       repoURL: http://gitadmin:v6ccouGZLBogfMn1AzL7@host.local-cluster.internal:3000/gitadmin/local_cluster
       targetRevision: HEAD
-    - chart: mychart
+    - chart: generic-chart
       helm:
         valueFiles:
           - $values/k8s/argocd-playground/traefik-minikube-vault-helm/application/mychart/mychart-values.yaml
       repoURL: http://host.local-cluster.internal:8088/
-      targetRevision: 1.0.0
+      targetRevision: 1.0.1
   syncPolicy:
     automated:
       prune: true

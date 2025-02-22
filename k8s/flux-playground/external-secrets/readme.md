@@ -42,10 +42,10 @@ First set a valid AWS account id in [k8s/flux-playground/external-secrets/vault/
 ./k8s/secret/create_aws_access_secret.sh
 
 # Check generated secret
-./scripts/check_external_secret.sh --cluster minikube --app podinfo --namespace mychart-podinfo --store fake-config-templated --config mychart-podinfo-podinfo-secret-config
+./scripts/check_external_secret.sh --kube-context minikube --app podinfo --namespace mychart-podinfo --store fake-config-templated --config mychart-podinfo-generic-chart-podinfo-secretconfig
 
 # Check secret being injected into podinfo
-pod=$(kubectl get pods -n mychart-podinfo -l app.kubernetes.io/name=mychart -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' 2>/dev/null)
+pod=$(kubectl get pods -n mychart-podinfo -l app.kubernetes.io/name=generic-chart -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' 2>/dev/null)
 kubectl exec -t -n mychart-podinfo "$pod" -- curl -sSf http://localhost:9898 | jq -r '.message'
 # You should see the admin api password in the message
 ```
@@ -54,11 +54,11 @@ kubectl exec -t -n mychart-podinfo "$pod" -- curl -sSf http://localhost:9898 | j
 
 ```shell
 # Get last secret sync
-kubectl get ExternalSecret -n mychart-podinfo mychart-podinfo-podinfo-secret -o jsonpath='{.status.conditions[0]}' | jq
+kubectl get ExternalSecret -n mychart-podinfo mychart-podinfo-generic-chart-podinfo -o jsonpath='{.status.conditions[0]}' | jq
 # Debug secret status
-kubectl describe ExternalSecret -n mychart-podinfo mychart-podinfo-podinfo-secret
+kubectl describe ExternalSecret -n mychart-podinfo mychart-podinfo-generic-chart-podinfo
 # Force sync external secret
-kubectl annotate ExternalSecret -n mychart-podinfo mychart-podinfo-podinfo-secret force-sync=$(date +%s) --overwrite
+kubectl annotate ExternalSecret -n mychart-podinfo mychart-podinfo-generic-chart-podinfo force-sync=$(date +%s) --overwrite
 # Force sync all external secrets from a given namespace (eg. mychart-podinfo)
 kubectl annotate ExternalSecret -n mychart-podinfo --all force-sync=$(date +%s) --overwrite
 # Get all secrets from helm chart for a given namespace (eg. mychart-podinfo)

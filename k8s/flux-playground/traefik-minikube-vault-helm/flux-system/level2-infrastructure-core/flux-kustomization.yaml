@@ -31,5 +31,5 @@ spec:
       namespace: traefik
     - apiVersion: source.toolkit.fluxcd.io/v1
       kind: HelmRepository
-      name: mychart
+      name: generic-helm
       namespace: apps

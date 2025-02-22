@@ -2,8 +2,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: mychart
+  name: generic-helm
   namespace: flux-system
 spec:
   interval: 1m0s
-  url: http://host.local-cluster.internal:8088/
+  url: https://nmarghetti.github.io/generic-helm

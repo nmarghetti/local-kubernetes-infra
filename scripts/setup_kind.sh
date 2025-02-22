@@ -75,13 +75,22 @@ EOM
     fi
 
     # Add kind certificates to nginx service
-    kubectl config view --minify --raw | yq -o json | jq '.clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-kind-k8s/"' | yq -P >./tmp/kind_kubeconfig.yaml
+    kubectl config view --minify --raw | yq 'del(.current-context)' >./tmp/kind_kubeconfig.yaml
     docker cp kind-control-plane:/etc/kubernetes/pki/ca.key ./tmp/kind_ca.key
     yq -r '.clusters[0].cluster.certificate-authority-data' <./tmp/kind_kubeconfig.yaml | base64 -d >./tmp/kind_ca.crt
     yq -r '.users[0].user.client-certificate-data' <./tmp/kind_kubeconfig.yaml | base64 -d >./tmp/kind_client.crt
     yq -r '.users[0].user.client-key-data' <./tmp/kind_kubeconfig.yaml | base64 -d >./tmp/kind_client.key
-    yq -i 'del(.clusters[0].cluster.certificate-authority-data) | del(.users[0].user)' ./tmp/kind_kubeconfig.yaml
-    yq -o json ./tmp/kind_kubeconfig.yaml | jq '.clusters[0].name |= "kind_nginx" | .contexts[0].name |= "kind_nginx" | .contexts[0].context.cluster |= "kind_nginx" | .contexts[0].context.user |= "kind_nginx" | .users[0].name |= "kind_nginx"' | yq 'del(.current-context)' | yq -P | sponge ./tmp/kind_kubeconfig.yaml
+    yq '
+      del(.clusters[0].cluster.certificate-authority-data) |
+      del(.users[0].user) |
+      .clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-kind-k8s/" |
+      .clusters[0].name |= "kind_nginx" |
+      .contexts[0].name |= "kind_nginx" |
+      .contexts[0].context.cluster |= "kind_nginx" |
+      .contexts[0].context.user |= "kind_nginx" |
+      .users[0].name |= "kind_nginx"
+      ' ./tmp/kind_kubeconfig.yaml >./tmp/kind_nginx_kubeconfig.yaml
+    [ -z "${KUBECONFIG:-}" ] && KUBECONFIG=~/.kube/config:./tmp/kind_nginx_kubeconfig.yaml kubectl config view --flatten | sponge ~/.kube/config
     if [ ! -f ./docker-compose/docker/nginx/certs/kind_ca.crt ] || ! cmp --silent ./tmp/kind_ca.crt ./docker-compose/docker/nginx/certs/kind_ca.crt; then
       run_command cp -f ./tmp/kind_ca.crt ./docker-compose/docker/nginx/certs/kind_ca.crt
       run_command cp -f ./tmp/kind_client.crt ./docker-compose/docker/nginx/certs/kind_client.crt

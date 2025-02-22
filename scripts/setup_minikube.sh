@@ -72,16 +72,25 @@ setup_minikube() {
   cp -f "$CERT_PATH/ca.crt" ~/.minikube/certs/local-ca.crt
 
   if [ ! "$(minikube status -o json | jq -r 'if type == "array" then . else [.] end | .[] | select(.Name == "minikube") | .APIServer')" = "Running" ]; then
-    run_command minikube start --nodes "$minikube_nodes" --embed-certs --insecure-registry="${DOCKER_COMPOSE_HOST}:${REGISTRY_PORT}" -v=5 || exit_error "Unable to start local cluster"
+    run_command minikube start --apiserver-port "$minikube_port" --nodes "$minikube_nodes" --embed-certs --insecure-registry="${DOCKER_COMPOSE_HOST}:${REGISTRY_PORT}" -v=5 || exit_error "Unable to start local cluster"
 
     # Add minikube certificates to nginx service
-    kubectl config view --minify --raw | yq -o json | jq '.clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-minikube-k8s/"' | yq -P >./tmp/minikube_kubeconfig.yaml
+    kubectl config view --minify --raw | yq 'del(.current-context)' >./tmp/minikube_kubeconfig.yaml
     cp ~/.minikube/ca.key ./tmp/minikube_ca.key
     yq -r '.clusters[0].cluster.certificate-authority-data' <./tmp/minikube_kubeconfig.yaml | base64 -d >./tmp/minikube_ca.crt
     yq -r '.users[0].user.client-certificate-data' <./tmp/minikube_kubeconfig.yaml | base64 -d >./tmp/minikube_client.crt
     yq -r '.users[0].user.client-key-data' <./tmp/minikube_kubeconfig.yaml | base64 -d >./tmp/minikube_client.key
-    yq -i 'del(.clusters[0].cluster.certificate-authority-data) | del(.users[0].user)' ./tmp/minikube_kubeconfig.yaml
-    yq -o json ./tmp/minikube_kubeconfig.yaml | jq '.clusters[0].name |= "minikube_nginx" | .contexts[0].name |= "minikube_nginx" | .contexts[0].context.cluster |= "minikube_nginx" | .contexts[0].context.user |= "minikube_nginx" | .users[0].name |= "minikube_nginx"' | yq 'del(.current-context)' | yq -P | sponge ./tmp/minikube_kubeconfig.yaml
+    yq '
+      del(.clusters[0].cluster.certificate-authority-data) |
+      del(.users[0].user) |
+      .clusters[0].cluster.server |= "http://localhost:'"${TRAEFIK_PORT:-80}"'/nginx-minikube-k8s/" |
+      .clusters[0].name |= "minikube_nginx" |
+      .contexts[0].name |= "minikube_nginx" |
+      .contexts[0].context.cluster |= "minikube_nginx" |
+      .contexts[0].context.user |= "minikube_nginx" |
+      .users[0].name |= "minikube_nginx"
+      ' ./tmp/minikube_kubeconfig.yaml >./tmp/minikube_nginx_kubeconfig.yaml
+    [ -z "${KUBECONFIG:-}" ] && KUBECONFIG=~/.kube/config:./tmp/minikube_nginx_kubeconfig.yaml kubectl config view --flatten | sponge ~/.kube/config
     if [ ! -f ./docker-compose/docker/nginx/certs/minikube_ca.crt ] || ! cmp --silent ./tmp/minikube_ca.crt ./docker-compose/docker/nginx/certs/minikube_ca.crt; then
       run_command cp -f ./tmp/minikube_ca.crt ./docker-compose/docker/nginx/certs/minikube_ca.crt
       run_command cp -f ./tmp/minikube_client.crt ./docker-compose/docker/nginx/certs/minikube_client.crt

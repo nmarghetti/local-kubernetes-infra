@@ -13,7 +13,7 @@ setup_flux() {
     flux_helm_repository="$helm_repo/repo.yaml"
     [ ! -f "$flux_helm_repository" ] && log_error "Unable to find '$helm_repo/repo.yaml' file"
     helm_repo_name=$(basename "$helm_repo")
-    if [ "$flux_local_helm" -eq 1 ] || [ "$helm_repo_name" = "mychart" ]; then
+    if [ "$flux_local_helm" -eq 1 ]; then
       grep -q "$flux_helm_cluster_url" "$flux_helm_repository" && continue
       log_info "Creating flux repositories yaml manifest ($flux_helm_repository)"
       if [ "$use_ssl" -eq 0 ]; then
@@ -37,6 +37,7 @@ setup_flux() {
         ['kubernetes-replicator']='https://helm.mittwald.de'
         ['reloader']='https://stakater.github.io/stakater-charts'
         ['traefik']='https://traefik.github.io/charts'
+        ['generic-helm']='https://nmarghetti.github.io/generic-helm'
       )
       [[ ! -v flux_online_helm_repositories[$helm_repo_name] ]] && continue
       flux_helm_repository_url=${flux_online_helm_repositories[$helm_repo_name]}
