@@ -311,6 +311,7 @@ for tenant_index in $(seq 0 1 $(($(jq '.tenants | length' <"$tenant_file") - 1))
   tenant_git_url="$(echo "$tenant_info" | jq -r '.git_url')"
   tenant_git_path="$(echo "$tenant_info" | jq -r '.git_path')"
   tenant_namespaces="$(echo "$tenant_info" | jq -r '.extra_namespaces[]')"
+  tenant_clusters="$(echo "$tenant_info" | jq -r '.clusters // [] | .[]')"
 
   echo "Treating tenant $tenant_name..."
 
@@ -363,6 +364,12 @@ EOM
   for cluster_index in $(seq 0 1 $(($(jq '.clusters | length' <"$tenant_file") - 1))); do
     cluster_info=$(jq '.clusters['"$cluster_index"']' <"$tenant_file")
     cluster_name="$(echo "$cluster_info" | jq -r '.name')"
+    if [ -n "$tenant_clusters" ]; then
+      if ! echo "$tenant_clusters" | grep -qFx "$cluster_name"; then
+        echo "  - Skipping cluster $cluster_name for tenant $tenant_name"
+        continue
+      fi
+    fi
     cluster_path="$(echo "$cluster_info" | jq -r '.path')"
     cluster_git_branch="$(echo "$cluster_info" | jq -r '.git_branch // "main"')"
     cluster_tenant_git_url="$(echo "$cluster_info" | jq -r '.git_url // "'"$tenant_git_url"'"')"
